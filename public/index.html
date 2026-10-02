@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A calm, number-free visual timer that transitions between two images."
+    />
+    <title>Between — Visual Timer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="site-header">
+        <a class="wordmark" href="#" aria-label="Between visual timer home">
+          <span class="wordmark-mark" aria-hidden="true"></span>
+          Between
+        </a>
+        <p>A visual timer for quiet transitions.</p>
+      </header>
+
+      <section class="timer-card" aria-labelledby="page-title">
+        <div class="preview-wrap">
+          <div
+            class="timer-canvas"
+            id="timerCanvas"
+            role="img"
+            aria-label="Timer preview, showing the starting image"
+          >
+            <div class="image-layer image-one" id="imageOne"></div>
+            <div class="image-layer image-two" id="imageTwo"></div>
+          </div>
+
+          <button
+            class="origin-picker"
+            id="originPicker"
+            type="button"
+            aria-label="Choose the transition origin. Current origin is centered."
+          >
+            <span class="origin-marker" id="originMarker" aria-hidden="true"></span>
+            <span class="origin-hint">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <circle cx="12" cy="12" r="8" />
+              </svg>
+              Click to set transition origin
+            </span>
+          </button>
+
+          <div class="timer-overlay" id="timerOverlay" hidden>
+            <div class="control-dock">
+              <div class="timer-state" id="timerState">In progress</div>
+              <button class="round-button pause-button" id="pauseButton" type="button">
+                <span class="pause-icon" aria-hidden="true"></span>
+                <span class="sr-only">Pause timer</span>
+              </button>
+              <button class="round-button" id="fullscreenButton" type="button">
+                <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path class="expand-path" d="M9 4H4v5m11-5h5v5M9 20H4v-5m11 5h5v-5" />
+                  <path class="collapse-path" d="M4 9h5V4m11 5h-5V4M4 15h5v5m11-5h-5v5" />
+                </svg>
+                <span class="sr-only">Enter full screen</span>
+              </button>
+              <button class="text-button" id="resetButton" type="button">End timer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-panel" id="setupPanel">
+          <div class="intro">
+            <p class="eyebrow">Set the scene</p>
+            <h1 id="page-title">Watch one moment become another.</h1>
+            <p class="intro-copy">
+              Choose two images, set your duration, and let the transition keep time—without a
+              countdown in sight.
+            </p>
+          </div>
+
+          <form id="timerForm">
+            <fieldset>
+              <legend>Choose your images</legend>
+              <div class="image-pickers">
+                <button class="image-picker" id="pickerOne" type="button" data-slot="one" aria-haspopup="dialog">
+                  <span class="picker-thumb thumb-one" id="thumbOne" aria-hidden="true"></span>
+                  <span class="picker-copy">
+                    <strong>Starting image</strong>
+                    <span id="fileOneName">Dark blue</span>
+                  </span>
+                  <span class="upload-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m9 6 6 6-6 6" />
+                    </svg>
+                  </span>
+                </button>
+
+                <span class="to-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14m-5-5 5 5-5 5" />
+                  </svg>
+                </span>
+
+                <button class="image-picker" id="pickerTwo" type="button" data-slot="two" aria-haspopup="dialog">
+                  <span class="picker-thumb thumb-two" id="thumbTwo" aria-hidden="true"></span>
+                  <span class="picker-copy">
+                    <strong>Finishing image</strong>
+                    <span id="fileTwoName">Burnt orange</span>
+                  </span>
+                  <span class="upload-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="m9 6 6 6-6 6" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </fieldset>
+
+            <div class="settings-row">
+              <label class="field-label" for="duration">
+                <span>Duration</span>
+                <span class="duration-field">
+                  <input id="duration" type="number" min="1" max="1440" value="20" required />
+                  <span>minutes</span>
+                </span>
+              </label>
+            </div>
+
+            <details class="advanced-settings">
+              <summary>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m9 6 6 6-6 6" />
+                </svg>
+                Advanced settings
+              </summary>
+              <div class="advanced-panel">
+                <fieldset class="wipe-fieldset">
+                  <legend>Wipe style</legend>
+                  <div class="wipe-options">
+                    <label>
+                      <input type="radio" name="wipeType" value="circle" checked />
+                      <span>
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <circle cx="12" cy="12" r="6" />
+                          <circle cx="12" cy="12" r="2" />
+                        </svg>
+                        Circular
+                      </span>
+                    </label>
+                    <label>
+                      <input type="radio" name="wipeType" value="horizontal" />
+                      <span>
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M4 12h15m-5-5 5 5-5 5" />
+                        </svg>
+                        Left to right
+                      </span>
+                    </label>
+                    <label>
+                      <input type="radio" name="wipeType" value="vertical" />
+                      <span>
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M12 4v15m-5-5 5 5 5-5" />
+                        </svg>
+                        Top to bottom
+                      </span>
+                    </label>
+                    <label>
+                      <input type="radio" name="wipeType" value="center" />
+                      <span>
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M4 12h16M12 10V4m0 10v6m-3-13 3-3 3 3m-6 10 3 3 3-3" />
+                        </svg>
+                        Center to edges
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                <div class="advanced-lower-grid">
+                  <fieldset class="direction-fieldset">
+                    <legend>Direction</legend>
+                    <div class="segmented-control">
+                      <label>
+                        <input type="radio" name="direction" value="forward" checked />
+                        <span>Forward direction</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="direction" value="inverse" />
+                        <span>Inverse direction</span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <label class="field-label" for="featherAmount">
+                    <span>Feather amount</span>
+                    <span class="duration-field feather-field">
+                      <input
+                        id="featherAmount"
+                        type="number"
+                        min="0"
+                        max="200"
+                        value="60"
+                        required
+                      />
+                      <span>pixels</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <button class="start-button" type="submit">
+              <span>Begin transition</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 5l9 7-9 7V5Z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <p class="privacy-note">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 10V8a5 5 0 0 1 10 0v2M5 10h14v10H5V10Z" />
+        </svg>
+        Images you select from your computer stay in this browser.
+      </p>
+    </main>
+
+    <dialog class="gallery-dialog" id="galleryDialog" aria-labelledby="galleryTitle">
+      <div class="gallery-header">
+        <h2 id="galleryTitle">Choose an image</h2>
+        <button class="gallery-close" id="galleryClose" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+
+      <div class="gallery-body">
+        <p class="gallery-status" id="galleryStatus" role="status">Loading images…</p>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+
+      <div class="gallery-footer">
+        <label class="upload-option">
+          <input type="file" id="galleryUpload" accept="image/*" />
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4h14v-4" />
+          </svg>
+          Select from your computer
+        </label>
+      </div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
