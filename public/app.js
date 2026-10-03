@@ -491,6 +491,11 @@ galleryDialog.addEventListener('click', (event) => {
 });
 galleryUpload.addEventListener('change', uploadImage);
 
+const DEFAULT_IMAGES = { one: 'Default1.jpeg', two: 'Default2.jpeg' };
+Object.entries(DEFAULT_IMAGES).forEach(([key, file]) => {
+  applyImage(slots[key], imageUrl(file), displayName(file), file);
+});
+
 form.addEventListener('submit', startTimer);
 originPicker.addEventListener('click', chooseOrigin);
 originPicker.addEventListener('keydown', moveOrigin);
