@@ -1,3 +1,6 @@
+import { circularWipe } from './transitions/circular_wipe.js';
+import { linearWipe, centerWipe } from './transitions/linear_wipe.js';
+
 const form = document.querySelector('#timerForm');
 const timerCard = document.querySelector('.timer-card');
 const timerCanvas = document.querySelector('#timerCanvas');
@@ -54,19 +57,6 @@ function canvasOrigin(fit) {
   };
 }
 
-function maxRadius(point) {
-  const width = timerCanvas.clientWidth;
-  const height = timerCanvas.clientHeight;
-  const farthestCorner = Math.max(
-    Math.hypot(point.x, point.y),
-    Math.hypot(width - point.x, point.y),
-    Math.hypot(point.x, height - point.y),
-    Math.hypot(width - point.x, height - point.y),
-  );
-
-  return farthestCorner + maskFeather / 2 + 1;
-}
-
 function clearMask(layer) {
   layer.style.maskImage = 'none';
   layer.style.webkitMaskImage = 'none';
@@ -77,71 +67,17 @@ function applyMask(layer, gradient) {
   layer.style.webkitMaskImage = gradient;
 }
 
-function circleMask(progress) {
-  const point = canvasOrigin('cover');
-  const maxDist = maxRadius(point);
-  
-  // Start -feather/2 so progress 0 is fully invisible.
-  // End maxDist + feather/2 so progress 1 fully covers the canvas without popping.
-  const minRadius = -maskFeather / 2;
-  const maxRadiusBuffered = maxDist + maskFeather / 2;
-  
-  const currentRadius = minRadius + (maxRadiusBuffered - minRadius) * (direction === 'forward' ? progress : 1 - progress);
-
-  const innerRadius = Math.max(0, currentRadius - maskFeather / 2);
-  const outerRadius = Math.max(0, currentRadius + maskFeather / 2);
-
-  if (direction === 'forward') {
-    return `radial-gradient(circle at ${point.x}px ${point.y}px, #000 ${innerRadius}px, transparent ${outerRadius}px)`;
-  }
-
-  return `radial-gradient(circle at ${point.x}px ${point.y}px, transparent ${innerRadius}px, #000 ${outerRadius}px)`;
-}
-
-function linearMask(progress, axis) {
-  const length = axis === 'horizontal' ? timerCanvas.clientWidth : timerCanvas.clientHeight;
-  
-  // Buffer both start (-feather/2) and end (length + feather/2)
-  const startEdge = -maskFeather / 2;
-  const endEdge = length + maskFeather / 2 + 1;
-  const edge = startEdge + (endEdge - startEdge) * progress;
-
-  const innerEdge = Math.max(0, edge - maskFeather / 2);
-  const outerEdge = Math.max(0, edge + maskFeather / 2);
-
-  const gradientDirection = axis === 'horizontal'
-    ? direction === 'forward' ? 'to right' : 'to left'
-    : direction === 'forward' ? 'to bottom' : 'to top';
-
-  return `linear-gradient(${gradientDirection}, #000 ${innerEdge}px, transparent ${outerEdge}px)`;
-}
-
-function centerMask(progress) {
-  const center = timerCanvas.clientHeight / 2;
-  
-  // Buffer max extent by full feather so the band completely clears top and bottom edges
-  const maxExtent = center + maskFeather + 1;
-  const activeProgress = direction === 'forward' ? progress : 1 - progress;
-  
-  const extent = maxExtent * activeProgress;
-
-  const topOuter = center - extent - maskFeather / 2;
-  const topInner = Math.min(center, center - extent + maskFeather / 2);
-  const bottomInner = Math.max(center, center + extent - maskFeather / 2);
-  const bottomOuter = center + extent + maskFeather / 2;
-
-  if (direction === 'forward') {
-    return `linear-gradient(to bottom, transparent ${topOuter}px, #000 ${topInner}px, #000 ${bottomInner}px, transparent ${bottomOuter}px)`;
-  }
-
-  return `linear-gradient(to bottom, #000 ${topOuter}px, transparent ${topInner}px, transparent ${bottomInner}px, #000 ${bottomOuter}px)`;
-}
-
 function maskForProgress(progress) {
-  if (wipeType === 'horizontal') return linearMask(progress, 'horizontal');
-  if (wipeType === 'vertical') return linearMask(progress, 'vertical');
-  if (wipeType === 'center') return centerMask(progress);
-  return circleMask(progress);
+  const width = timerCanvas.clientWidth;
+  const height = timerCanvas.clientHeight;
+  const options = { width, height, direction, feather: maskFeather };
+
+  if (wipeType === 'horizontal') return linearWipe(progress, { ...options, axis: 'horizontal' });
+  if (wipeType === 'vertical') return linearWipe(progress, { ...options, axis: 'vertical' });
+  if (wipeType === 'center') return centerWipe(progress, options);
+
+  const point = canvasOrigin('cover');
+  return circularWipe(progress, { ...options, cx: point.x, cy: point.y });
 }
 
 function renderProgress(progress) {
@@ -377,7 +313,6 @@ async function fetchManifest() {
   return list;
 }
 
-// Fallback for servers that expose a directory listing (e.g. `python3 -m http.server`).
 async function fetchDirectoryListing() {
   const response = await fetch(IMAGE_DIR);
   if (!response.ok) throw new Error('No directory listing');
