@@ -125,6 +125,7 @@ label {
 .timer-card:not(.is-running) .image-layer {
   background-repeat: no-repeat;
   background-size: contain;
+  background-position: center center;
 }
 
 .image-one {

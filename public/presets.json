@@ -8,7 +8,10 @@
     "wipeType": "circle",
     "direction": "forward",
     "feather": 60,
-    "origin": { "x": 0.0, "y": 0.4 }
+    "origin": {
+      "x": 0,
+      "y": 0.4
+    }
   },
   {
     "id": "soft-horizon",
@@ -19,7 +22,10 @@
     "wipeType": "crossfade",
     "direction": "forward",
     "feather": 0,
-    "origin": { "x": 0.5, "y": 0.5 }
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    }
   },
   {
     "id": "top-down",
@@ -30,21 +36,84 @@
     "wipeType": "vertical",
     "direction": "forward",
     "feather": 80,
-    "origin": { "x": 0.5, "y": 0.5 }
-  }
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    }
+  },
   {
     "id": "nouveau-candles",
     "name": "Nouveau Candles",
     "imageOne": "CandleNouveau1.jpeg",
     "imageTwo": "CandleNouveau2.jpeg",
-    "duration": 1,
+    "duration": 2,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 80,
+    "origin": {
+      "x": 0.7748397435897436,
+      "y": 0.2832198183760683
+    },
+    "thumbnail": "thumbnails/nouveau-candles.jpg"
+  },
+  {
+    "id": "beach-salad",
+    "name": "Beach Salad",
+    "imageOne": "BeachSalad1.png",
+    "imageTwo": "BeachSalad2.png",
+    "duration": 5,
     "wipeType": "circle",
     "direction": "inverse",
     "feather": 70,
     "origin": {
-      "x": 0.6454939059488951,
-      "y": 0.4786991869918699
+      "x": 0.5093475486147608,
+      "y": 0.49103282143932553
     },
-    "thumbnail": "thumbnails/nouveau-candles.jpg"
+    "thumbnail": "thumbnails/beach-salad.jpg"
+  },
+  {
+    "id": "mushrooms",
+    "name": "Mushrooms",
+    "imageOne": "Mushrooms1.jpeg",
+    "imageTwo": "Mushrooms2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.4951923076923077,
+      "y": 0.37797142094017083
+    },
+    "thumbnail": "thumbnails/mushrooms.jpg"
+  },
+  {
+    "id": "pottery",
+    "name": "Pottery",
+    "imageOne": "Pottery1.jpeg",
+    "imageTwo": "Pottery2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5689102564102564,
+      "y": 0.7482638888888888
+    },
+    "thumbnail": "thumbnails/pottery.jpg"
+  },
+  {
+    "id": "overgrown",
+    "name": "Overgrown",
+    "imageOne": "Overgrown2.jpeg",
+    "imageTwo": "Overgrown1.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5032051282051282,
+      "y": 0.5572916666666666
+    },
+    "thumbnail": "thumbnails/overgrown.jpg"
   }
 ]

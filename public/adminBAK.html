@@ -74,9 +74,6 @@
                     <strong>Starting image</strong>
                     <span id="fileOneName">Default1.jpeg</span>
                   </span>
-                  <span class="upload-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" /></svg>
-                  </span>
                 </button>
 
                 <span class="to-arrow" aria-hidden="true">
@@ -88,9 +85,6 @@
                   <span class="picker-copy">
                     <strong>Finishing image</strong>
                     <span id="fileTwoName">Default2.jpeg</span>
-                  </span>
-                  <span class="upload-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" /></svg>
                   </span>
                 </button>
               </div>
@@ -153,6 +147,7 @@
             </div>
           </form>
 
+          <!-- Thumbnail Snapshot Card Preview -->
           <div class="thumbnail-preview-card" id="thumbnailCard" hidden>
             <p class="eyebrow">50% Progress Thumbnail Snapshot</p>
             <canvas id="thumbnailCanvas" width="300" height="169"></canvas>
@@ -165,27 +160,10 @@
     <dialog class="gallery-dialog" id="galleryDialog" aria-labelledby="galleryTitle">
       <div class="gallery-header">
         <h2 id="galleryTitle">Choose an image</h2>
-        <button class="gallery-close" id="galleryClose" type="button">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </svg>
-          <span class="sr-only">Close</span>
-        </button>
+        <button class="gallery-close" id="galleryClose" type="button">✕</button>
       </div>
-
       <div class="gallery-body">
-        <p class="gallery-status" id="galleryStatus" role="status">Loading images…</p>
         <div class="gallery-grid" id="galleryGrid"></div>
-      </div>
-
-      <div class="gallery-footer">
-        <label class="upload-option">
-          <input type="file" id="galleryUpload" accept="image/*" />
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4h14v-4" />
-          </svg>
-          Select from your computer
-        </label>
       </div>
     </dialog>
 

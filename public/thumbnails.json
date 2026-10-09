@@ -1,0 +1,17 @@
+[
+  {
+    "id": "mushrooms",
+    "name": "Mushrooms",
+    "file": "thumbnails/mushrooms.jpg"
+  },
+  {
+    "id": "pottery",
+    "name": "Pottery",
+    "file": "thumbnails/pottery.jpg"
+  },
+  {
+    "id": "overgrown",
+    "name": "Overgrown",
+    "file": "thumbnails/overgrown.jpg"
+  }
+]
