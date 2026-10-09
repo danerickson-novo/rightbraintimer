@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Between — Preset Creator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="site-header">
+        <a class="wordmark" href="index.html" aria-label="Between visual timer home">
+          <span class="wordmark-mark" aria-hidden="true"></span>
+          Between <span class="badge">Admin</span>
+        </a>
+        <p>Preset Creator Studio</p>
+      </header>
+
+      <section class="timer-card" aria-labelledby="page-title">
+        <div class="preview-wrap">
+          <div class="timer-canvas" id="timerCanvas" role="img" aria-label="Preset Preview Canvas">
+            <div class="image-layer image-one" id="imageOne"></div>
+            <div class="image-layer image-two" id="imageTwo"></div>
+          </div>
+
+          <button class="origin-picker" id="originPicker" type="button" aria-label="Choose origin">
+            <span class="origin-marker" id="originMarker" aria-hidden="true"></span>
+            <span class="origin-hint">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <circle cx="12" cy="12" r="8" />
+              </svg>
+              Click to set transition origin
+            </span>
+          </button>
+
+          <div class="timer-overlay" id="timerOverlay" hidden>
+            <div class="control-dock">
+              <div class="timer-state" id="timerState">Previewing</div>
+              <button class="round-button pause-button" id="pauseButton" type="button">
+                <span class="pause-icon" aria-hidden="true"></span>
+                <span class="sr-only">Pause</span>
+              </button>
+              <button class="text-button" id="editButton" type="button">Revise Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-panel" id="setupPanel">
+          <div class="intro">
+            <p class="eyebrow">Admin Tool</p>
+            <h1 id="page-title">Create Preset Loadout</h1>
+            <p class="intro-copy">
+              Configure transition defaults, preview the movement, and save as a reusable preset with an automatically generated thumbnail.
+            </p>
+          </div>
+
+          <form id="presetForm">
+            <div class="settings-row">
+              <label class="field-label" for="presetName">
+                <span>Preset Title</span>
+                <span class="duration-field">
+                  <input id="presetName" type="text" placeholder="e.g. Quiet Dawn" required />
+                </span>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>Choose images</legend>
+              <div class="image-pickers">
+                <button class="image-picker" id="pickerOne" type="button" data-slot="one" aria-haspopup="dialog">
+                  <span class="picker-thumb thumb-one" id="thumbOne" aria-hidden="true"></span>
+                  <span class="picker-copy">
+                    <strong>Starting image</strong>
+                    <span id="fileOneName">Default1.jpeg</span>
+                  </span>
+                </button>
+
+                <span class="to-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+                </span>
+
+                <button class="image-picker" id="pickerTwo" type="button" data-slot="two" aria-haspopup="dialog">
+                  <span class="picker-thumb thumb-two" id="thumbTwo" aria-hidden="true"></span>
+                  <span class="picker-copy">
+                    <strong>Finishing image</strong>
+                    <span id="fileTwoName">Default2.jpeg</span>
+                  </span>
+                </button>
+              </div>
+            </fieldset>
+
+            <div class="settings-row">
+              <label class="field-label" for="duration">
+                <span>Duration</span>
+                <span class="duration-field">
+                  <input id="duration" type="number" min="1" max="1440" value="10" required />
+                  <span>minutes</span>
+                </span>
+              </label>
+            </div>
+
+            <details class="advanced-settings" open>
+              <summary>
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+                Transition Configuration
+              </summary>
+              <div class="advanced-panel">
+                <fieldset class="wipe-fieldset">
+                  <legend>Wipe style</legend>
+                  <div class="wipe-options" id="wipeOptions"></div>
+                </fieldset>
+
+                <div class="advanced-lower-grid">
+                  <fieldset class="direction-fieldset">
+                    <legend>Direction</legend>
+                    <div class="segmented-control">
+                      <label>
+                        <input type="radio" name="direction" value="forward" checked />
+                        <span>Forward</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="direction" value="inverse" />
+                        <span>Inverse</span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <label class="field-label" for="featherAmount">
+                    <span>Feather amount</span>
+                    <span class="duration-field feather-field">
+                      <input id="featherAmount" type="number" min="0" max="200" value="70" required />
+                      <span>pixels</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <div class="admin-actions">
+              <button class="start-button secondary-btn" id="previewBtn" type="button">
+                <span>Preview Transition</span>
+              </button>
+              <button class="start-button" id="saveBtn" type="submit">
+                <span>Save Preset & Generate Thumbnail</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Thumbnail Snapshot Card Preview -->
+          <div class="thumbnail-preview-card" id="thumbnailCard" hidden>
+            <p class="eyebrow">50% Progress Thumbnail Snapshot</p>
+            <canvas id="thumbnailCanvas" width="300" height="169"></canvas>
+            <p class="status-msg" id="saveStatus"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="gallery-dialog" id="galleryDialog" aria-labelledby="galleryTitle">
+      <div class="gallery-header">
+        <h2 id="galleryTitle">Choose an image</h2>
+        <button class="gallery-close" id="galleryClose" type="button">✕</button>
+      </div>
+      <div class="gallery-body">
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </dialog>
+
+    <script type="module" src="admin.js"></script>
+  </body>
+</html>
