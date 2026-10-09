@@ -1,13 +1,59 @@
 import http from 'http';
 import fs from 'fs/promises';
+import { watch } from 'fs';
 import path from 'path';
 
 const PORT = 3001;
+const VALID_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif', '.svg']);
+
+/**
+ * Scans the images/ directory and rebuilds manifest.json
+ */
+async function generateImageManifest() {
+  const imagesDir = path.join(process.cwd(), 'images');
+  
+  try {
+    await fs.mkdir(imagesDir, { recursive: true });
+
+    const files = await fs.readdir(imagesDir);
+    const imageFiles = files
+      .filter((file) => VALID_EXTENSIONS.has(path.extname(file).toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+    const manifestPath = path.join(imagesDir, 'manifest.json');
+    await fs.writeFile(manifestPath, JSON.stringify(imageFiles, null, 2));
+    console.log(`✓ Updated images/manifest.json (${imageFiles.length} images indexed)`);
+  } catch (err) {
+    console.error('Failed to generate image manifest:', err.message);
+  }
+}
+
+/**
+ * Watches the images/ folder for any file additions, deletions, or renames
+ */
+function watchImagesFolder() {
+  const imagesDir = path.join(process.cwd(), 'images');
+  let debounceTimer;
+
+  try {
+    watch(imagesDir, (eventType, filename) => {
+      // Ignore changes to manifest.json itself to prevent an infinite loop
+      if (filename && filename !== 'manifest.json') {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          generateImageManifest();
+        }, 300);
+      }
+    });
+    console.log('👀 Live watching images/ directory for changes...');
+  } catch (err) {
+    console.error('Could not set up images/ folder watcher:', err.message);
+  }
+}
 
 const server = http.createServer(async (req, res) => {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -22,16 +68,13 @@ const server = http.createServer(async (req, res) => {
       try {
         const { preset, thumbnailBase64 } = JSON.parse(body);
 
-        // 1. Ensure thumbnails directory exists
         const thumbDir = path.join(process.cwd(), 'thumbnails');
         await fs.mkdir(thumbDir, { recursive: true });
 
-        // 2. Write JPEG thumbnail image
         const base64Data = thumbnailBase64.replace(/^data:image\/jpeg;base64,/, '');
         const thumbPath = path.join(thumbDir, `${preset.id}.jpg`);
         await fs.writeFile(thumbPath, Buffer.from(base64Data, 'base64'));
 
-        // 3. Update presets.json
         const presetsPath = path.join(process.cwd(), 'presets.json');
         let presets = [];
         try {
@@ -40,15 +83,13 @@ const server = http.createServer(async (req, res) => {
         } catch {
           presets = [];
         }
-        
-        // Replace existing or append
+
         const index = presets.findIndex(p => p.id === preset.id);
         if (index >= 0) presets[index] = preset;
         else presets.push(preset);
 
         await fs.writeFile(presetsPath, JSON.stringify(presets, null, 2));
 
-        // 4. Update thumbnails.json index
         const thumbJsonPath = path.join(process.cwd(), 'thumbnails.json');
         let thumbIndex = [];
         try {
@@ -77,4 +118,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`Admin Server active on http://localhost:${PORT}`));
+server.listen(PORT, async () => {
+  console.log(`Admin Server active on http://localhost:${PORT}`);
+  await generateImageManifest();
+  watchImagesFolder();
+});

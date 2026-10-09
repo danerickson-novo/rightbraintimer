@@ -115,5 +115,35 @@
       "y": 0.5572916666666666
     },
     "thumbnail": "thumbnails/overgrown.jpg"
+  },
+  {
+    "id": "cabin-blueprint",
+    "name": "Cabin Blueprint",
+    "imageOne": "BlueprintCabin1.jpeg",
+    "imageTwo": "BlueprintCabin2.jpeg",
+    "duration": 10,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 70,
+    "origin": {
+      "x": 0.5040064102564102,
+      "y": 0.00787927350427352
+    },
+    "thumbnail": "thumbnails/cabin-blueprint.jpg"
+  },
+  {
+    "id": "dream-car",
+    "name": "Dream Car",
+    "imageOne": "DreamCar1.jpeg",
+    "imageTwo": "DreamCar2.jpeg",
+    "duration": 10,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.2860576923076923,
+      "y": 0.6105435363247862
+    },
+    "thumbnail": "thumbnails/dream-car.jpg"
   }
 ]

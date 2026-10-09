@@ -13,5 +13,15 @@
     "id": "overgrown",
     "name": "Overgrown",
     "file": "thumbnails/overgrown.jpg"
+  },
+  {
+    "id": "cabin-blueprint",
+    "name": "Cabin Blueprint",
+    "file": "thumbnails/cabin-blueprint.jpg"
+  },
+  {
+    "id": "dream-car",
+    "name": "Dream Car",
+    "file": "thumbnails/dream-car.jpg"
   }
 ]
