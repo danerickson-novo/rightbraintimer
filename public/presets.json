@@ -32,4 +32,19 @@
     "feather": 80,
     "origin": { "x": 0.5, "y": 0.5 }
   }
+  {
+    "id": "nouveau-candles",
+    "name": "Nouveau Candles",
+    "imageOne": "CandleNouveau1.jpeg",
+    "imageTwo": "CandleNouveau2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.6454939059488951,
+      "y": 0.4786991869918699
+    },
+    "thumbnail": "thumbnails/nouveau-candles.jpg"
+  }
 ]
