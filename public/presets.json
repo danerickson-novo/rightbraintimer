@@ -1,21 +1,21 @@
 [
   {
-    "id": "quiet-dawn",
-    "name": "Quiet Dawn (20 min Circular)",
+    "id": "candle-demo",
+    "name": "Candle Demo (1 minute circular)",
     "imageOne": "Default1.jpeg",
     "imageTwo": "Default2.jpeg",
     "duration": 20,
     "wipeType": "circle",
     "direction": "forward",
     "feather": 60,
-    "origin": { "x": 0.5, "y": 0.5 }
+    "origin": { "x": 0.0, "y": 0.55 }
   },
   {
     "id": "soft-horizon",
     "name": "Soft Horizon (10 min Crossfade)",
-    "imageOne": "Default1.jpeg",
-    "imageTwo": "Default2.jpeg",
-    "duration": 10,
+    "imageOne": "Sunrise1.jpeg",
+    "imageTwo": "Sunrise2.jpeg",
+    "duration": 1,
     "wipeType": "crossfade",
     "direction": "forward",
     "feather": 0,
