@@ -1060,3 +1060,35 @@ legend,
     transition-duration: 0.01ms !important;
   }
 }
+/* --- Preset Field Styling --- */
+.preset-row {
+  margin-bottom: 22px;
+}
+
+.select-field {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 0 10px;
+  background: white;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.select-field:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(35, 74, 60, 0.09);
+}
+
+.select-field select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  cursor: pointer;
+}

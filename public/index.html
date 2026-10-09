@@ -78,6 +78,17 @@
           </div>
 
           <form id="timerForm">
+            <div class="preset-row">
+              <label class="field-label" for="presetSelect">
+                <span>Preset loadout</span>
+                <div class="select-field">
+                  <select id="presetSelect">
+                    <option value="">Custom settings...</option>
+                  </select>
+                </div>
+              </label>
+            </div>
+
             <fieldset>
               <legend>Choose your images</legend>
               <div class="image-pickers">
@@ -135,44 +146,8 @@
               <div class="advanced-panel">
                 <fieldset class="wipe-fieldset">
                   <legend>Wipe style</legend>
-                  <div class="wipe-options">
-                    <label>
-                      <input type="radio" name="wipeType" value="circle" checked />
-                      <span>
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <circle cx="12" cy="12" r="6" />
-                          <circle cx="12" cy="12" r="2" />
-                        </svg>
-                        Circular
-                      </span>
-                    </label>
-                    <label>
-                      <input type="radio" name="wipeType" value="horizontal" />
-                      <span>
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <path d="M4 12h15m-5-5 5 5-5 5" />
-                        </svg>
-                        Left to right
-                      </span>
-                    </label>
-                    <label>
-                      <input type="radio" name="wipeType" value="vertical" />
-                      <span>
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <path d="M12 4v15m-5-5 5 5 5-5" />
-                        </svg>
-                        Top to bottom
-                      </span>
-                    </label>
-                    <label>
-                      <input type="radio" name="wipeType" value="center" />
-                      <span>
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <path d="M4 12h16M12 10V4m0 10v6m-3-13 3-3 3 3m-6 10 3 3 3-3" />
-                        </svg>
-                        Center to edges
-                      </span>
-                    </label>
+                  <div class="wipe-options" id="wipeOptions">
+                    <!-- Dynamically injected transition options -->
                   </div>
                 </fieldset>
 
@@ -254,6 +229,6 @@
       </div>
     </dialog>
 
-	<script type="module" src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "quiet-dawn",
+    "name": "Quiet Dawn (20 min Circular)",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 20,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 60,
+    "origin": { "x": 0.5, "y": 0.5 }
+  },
+  {
+    "id": "soft-horizon",
+    "name": "Soft Horizon (10 min Crossfade)",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 10,
+    "wipeType": "crossfade",
+    "direction": "forward",
+    "feather": 0,
+    "origin": { "x": 0.5, "y": 0.5 }
+  },
+  {
+    "id": "top-down",
+    "name": "Sunfall (15 min Vertical Wipe)",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 15,
+    "wipeType": "vertical",
+    "direction": "forward",
+    "feather": 80,
+    "origin": { "x": 0.5, "y": 0.5 }
+  }
+]

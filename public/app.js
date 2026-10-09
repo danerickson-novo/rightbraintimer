@@ -1,5 +1,4 @@
-import { circularWipe } from './transitions/circular_wipe.js';
-import { linearWipe, centerWipe } from './transitions/linear_wipe.js';
+import { transitionsRegistry } from './transitions/index.js';
 
 const form = document.querySelector('#timerForm');
 const timerCard = document.querySelector('.timer-card');
@@ -14,7 +13,8 @@ const fullscreenButton = document.querySelector('#fullscreenButton');
 const resetButton = document.querySelector('#resetButton');
 const timerState = document.querySelector('#timerState');
 const featherAmount = document.querySelector('#featherAmount');
-const wipeTypeInputs = document.querySelectorAll('input[name="wipeType"]');
+const wipeOptionsContainer = document.querySelector('#wipeOptions');
+const presetSelect = document.querySelector('#presetSelect');
 
 let animationFrame;
 let startedAt = 0;
@@ -27,6 +27,32 @@ let isPaused = false;
 let maskFeather = 60;
 let origin = { x: 0.5, y: 0.5 };
 let sourceSize;
+let loadedPresets = [];
+
+// --- Dynamic Transition UI Setup ---
+function renderTransitionOptions() {
+  wipeOptionsContainer.replaceChildren();
+
+  transitionsRegistry.forEach((transition, id) => {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'wipeType';
+    input.value = id;
+    if (id === wipeType) input.checked = true;
+
+    input.addEventListener('change', () => {
+      wipeType = id;
+      syncOriginPicker();
+    });
+
+    const span = document.createElement('span');
+    span.innerHTML = `${transition.iconSvg} ${transition.name}`;
+
+    label.append(input, span);
+    wipeOptionsContainer.append(label);
+  });
+}
 
 function imageBounds(fit) {
   const width = timerCanvas.clientWidth;
@@ -67,19 +93,6 @@ function applyMask(layer, gradient) {
   layer.style.webkitMaskImage = gradient;
 }
 
-function maskForProgress(progress) {
-  const width = timerCanvas.clientWidth;
-  const height = timerCanvas.clientHeight;
-  const options = { width, height, direction, feather: maskFeather };
-
-  if (wipeType === 'horizontal') return linearWipe(progress, { ...options, axis: 'horizontal' });
-  if (wipeType === 'vertical') return linearWipe(progress, { ...options, axis: 'vertical' });
-  if (wipeType === 'center') return centerWipe(progress, options);
-
-  const point = canvasOrigin('cover');
-  return circularWipe(progress, { ...options, cx: point.x, cy: point.y });
-}
-
 function renderProgress(progress) {
   imageOne.style.zIndex = '1';
   imageOne.style.opacity = '1';
@@ -89,12 +102,45 @@ function renderProgress(progress) {
   if (progress <= 0) {
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
-  } else if (progress >= 1) {
+    return;
+  }
+  if (progress >= 1) {
     imageTwo.style.opacity = '1';
     clearMask(imageTwo);
+    return;
+  }
+
+  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
+  const point = canvasOrigin('cover');
+  const width = timerCanvas.clientWidth;
+  const height = timerCanvas.clientHeight;
+
+  const options = {
+    width,
+    height,
+    direction,
+    feather: maskFeather,
+    cx: point.x,
+    cy: point.y,
+  };
+
+  const result = transition.render(progress, options);
+
+  // Apply opacities
+  imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
+  if (result.opacityOne !== undefined) imageOne.style.opacity = result.opacityOne;
+
+  // Apply or clear masks
+  if (result.maskTwo) {
+    applyMask(imageTwo, result.maskTwo);
   } else {
-    imageTwo.style.opacity = '1';
-    applyMask(imageTwo, maskForProgress(progress));
+    clearMask(imageTwo);
+  }
+
+  if (result.maskOne) {
+    applyMask(imageOne, result.maskOne);
+  } else {
+    clearMask(imageOne);
   }
 }
 
@@ -211,7 +257,9 @@ function positionOriginMarker() {
 }
 
 function syncOriginPicker() {
-  originPicker.hidden = form.elements.wipeType.value !== 'circle';
+  const currentType = form.elements.wipeType ? form.elements.wipeType.value : 'circle';
+  const transition = transitionsRegistry.get(currentType);
+  originPicker.hidden = !(transition && transition.supportsOrigin);
 }
 
 function chooseOrigin(event) {
@@ -261,6 +309,7 @@ function syncFullscreenState() {
     : 'Enter full screen';
 }
 
+// --- Image Handling & Gallery Dialog ---
 const IMAGE_DIR = 'images/';
 const IMAGE_PATTERN = /\.(avif|gif|jpe?g|png|svg|webp)$/i;
 
@@ -417,6 +466,71 @@ function uploadImage() {
   galleryUpload.value = '';
 }
 
+// --- Presets Implementation ---
+async function fetchPresets() {
+  try {
+    const response = await fetch('presets.json', { cache: 'no-cache' });
+    if (!response.ok) return [];
+    return await response.json();
+  } catch {
+    return [];
+  }
+}
+
+function applyPreset(preset) {
+  if (!preset) return;
+
+  if (preset.imageOne) {
+    applyImage(slots.one, imageUrl(preset.imageOne), displayName(preset.imageOne), preset.imageOne);
+  }
+  if (preset.imageTwo) {
+    applyImage(slots.two, imageUrl(preset.imageTwo), displayName(preset.imageTwo), preset.imageTwo);
+  }
+  if (preset.duration !== undefined) {
+    document.querySelector('#duration').value = preset.duration;
+  }
+  if (preset.feather !== undefined) {
+    featherAmount.value = preset.feather;
+  }
+  if (preset.wipeType && transitionsRegistry.has(preset.wipeType)) {
+    const radio = form.querySelector(`input[name="wipeType"][value="${preset.wipeType}"]`);
+    if (radio) {
+      radio.checked = true;
+      wipeType = preset.wipeType;
+    }
+  }
+  if (preset.direction) {
+    const radio = form.querySelector(`input[name="direction"][value="${preset.direction}"]`);
+    if (radio) radio.checked = true;
+  }
+  if (preset.origin) {
+    updateOrigin(preset.origin.x, preset.origin.y);
+  }
+
+  syncOriginPicker();
+}
+
+async function initPresets() {
+  loadedPresets = await fetchPresets();
+  if (!loadedPresets.length) return;
+
+  loadedPresets.forEach((p) => {
+    const option = document.createElement('option');
+    option.value = p.id;
+    option.textContent = p.name;
+    presetSelect.append(option);
+  });
+
+  presetSelect.addEventListener('change', () => {
+    const selected = loadedPresets.find((p) => p.id === presetSelect.value);
+    if (selected) applyPreset(selected);
+  });
+}
+
+// --- App Initialization ---
+renderTransitionOptions();
+initPresets();
+
 Object.values(slots).forEach((slot) => {
   slot.button.addEventListener('click', () => openGallery(slot));
 });
@@ -434,11 +548,11 @@ Object.entries(DEFAULT_IMAGES).forEach(([key, file]) => {
 form.addEventListener('submit', startTimer);
 originPicker.addEventListener('click', chooseOrigin);
 originPicker.addEventListener('keydown', moveOrigin);
-wipeTypeInputs.forEach((input) => input.addEventListener('change', syncOriginPicker));
 pauseButton.addEventListener('click', togglePause);
 fullscreenButton.addEventListener('click', toggleFullscreen);
 resetButton.addEventListener('click', resetTimer);
 document.addEventListener('fullscreenchange', syncFullscreenState);
+
 window.addEventListener('resize', () => {
   if (timerCard.classList.contains('is-running')) {
     const elapsed = isPaused
