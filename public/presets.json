@@ -4,7 +4,7 @@
     "name": "Candle Demo (1 minute circular)",
     "imageOne": "Default1.jpeg",
     "imageTwo": "Default2.jpeg",
-    "duration": 20,
+    "duration": 1,
     "wipeType": "circle",
     "direction": "forward",
     "feather": 60,
