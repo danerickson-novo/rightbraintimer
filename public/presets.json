@@ -8,7 +8,7 @@
     "wipeType": "circle",
     "direction": "forward",
     "feather": 60,
-    "origin": { "x": 0.0, "y": 0.55 }
+    "origin": { "x": 0.0, "y": 0.4 }
   },
   {
     "id": "soft-horizon",
