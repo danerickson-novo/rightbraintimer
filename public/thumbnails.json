@@ -23,5 +23,10 @@
     "id": "dream-car",
     "name": "Dream Car",
     "file": "thumbnails/dream-car.jpg"
+  },
+  {
+    "id": "map-travel",
+    "name": "Map Travel",
+    "file": "thumbnails/map-travel.jpg"
   }
 ]

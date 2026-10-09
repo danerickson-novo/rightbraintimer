@@ -1,0 +1,12 @@
+[
+  {
+    "id": "frying-eggs",
+    "name": "Frying Eggs",
+    "file": "thumbnails/frying-eggs.jpg"
+  },
+  {
+    "id": "map-travel",
+    "name": "Map Travel",
+    "file": "thumbnails/map-travel.jpg"
+  }
+]

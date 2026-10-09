@@ -14,7 +14,18 @@ const resetButton = document.querySelector('#resetButton');
 const timerState = document.querySelector('#timerState');
 const featherAmount = document.querySelector('#featherAmount');
 const wipeOptionsContainer = document.querySelector('#wipeOptions');
-const presetSelect = document.querySelector('#presetSelect');
+
+// Preset Elements
+const presetPicker = document.querySelector('#presetPicker');
+const presetThumb = document.querySelector('#presetThumb');
+const presetTitle = document.querySelector('#presetTitle');
+const presetSubtitle = document.querySelector('#presetSubtitle');
+const presetDialog = document.querySelector('#presetDialog');
+const presetClose = document.querySelector('#presetClose');
+const presetGrid = document.querySelector('#presetGrid');
+const presetStatus = document.querySelector('#presetStatus');
+
+const DEFAULT_THUMB = 'thumbnails/defthumb.jpeg';
 
 let animationFrame;
 let startedAt = 0;
@@ -28,8 +39,9 @@ let maskFeather = 60;
 let origin = { x: 0.5, y: 0.5 };
 let sourceSize;
 let loadedPresets = [];
+let activePresetId = null;
 
-// --- Dynamic Transition UI Setup ---
+// Dynamic Transition UI Setup
 function renderTransitionOptions() {
   wipeOptionsContainer.replaceChildren();
 
@@ -126,11 +138,9 @@ function renderProgress(progress) {
 
   const result = transition.render(progress, options);
 
-  // Apply opacities
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
   if (result.opacityOne !== undefined) imageOne.style.opacity = result.opacityOne;
 
-  // Apply or clear masks
   if (result.maskTwo) {
     applyMask(imageTwo, result.maskTwo);
   } else {
@@ -466,19 +476,27 @@ function uploadImage() {
   galleryUpload.value = '';
 }
 
-// --- Presets Implementation ---
+// --- Presets System with Thumbnail Support ---
 async function fetchPresets() {
   try {
     const response = await fetch('presets.json', { cache: 'no-cache' });
     if (!response.ok) return [];
     return await response.json();
-  } catch {
+  } catch (err) {
+    console.error('Failed to parse presets.json:', err);
     return [];
   }
 }
 
 function applyPreset(preset) {
   if (!preset) return;
+
+  activePresetId = preset.id;
+  presetTitle.textContent = preset.name;
+  presetSubtitle.textContent = `${preset.duration} min duration`;
+
+  const thumbUrl = preset.thumbnail || DEFAULT_THUMB;
+  presetThumb.style.backgroundImage = `url("${thumbUrl}")`;
 
   if (preset.imageOne) {
     applyImage(slots.one, imageUrl(preset.imageOne), displayName(preset.imageOne), preset.imageOne);
@@ -510,20 +528,50 @@ function applyPreset(preset) {
   syncOriginPicker();
 }
 
+function renderPresetDialog() {
+  presetGrid.replaceChildren();
+
+  if (!loadedPresets.length) {
+    presetStatus.textContent = 'No presets are available.';
+    presetStatus.hidden = false;
+    return;
+  }
+
+  presetStatus.hidden = true;
+  loadedPresets.forEach((preset) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'gallery-item';
+    item.setAttribute('aria-pressed', String(activePresetId === preset.id));
+
+    const picture = document.createElement('img');
+    const thumbPath = preset.thumbnail || DEFAULT_THUMB;
+    picture.src = thumbPath;
+    picture.alt = preset.name;
+    picture.loading = 'lazy';
+
+    // Fallback if the specified thumbnail file fails to load
+    picture.addEventListener('error', () => {
+      picture.src = DEFAULT_THUMB;
+    });
+
+    const caption = document.createElement('span');
+    caption.textContent = preset.name;
+
+    item.append(picture, caption);
+    item.addEventListener('click', () => {
+      applyPreset(preset);
+      presetDialog.close();
+    });
+    presetGrid.append(item);
+  });
+}
+
 async function initPresets() {
   loadedPresets = await fetchPresets();
-  if (!loadedPresets.length) return;
-
-  loadedPresets.forEach((p) => {
-    const option = document.createElement('option');
-    option.value = p.id;
-    option.textContent = p.name;
-    presetSelect.append(option);
-  });
-
-  presetSelect.addEventListener('change', () => {
-    const selected = loadedPresets.find((p) => p.id === presetSelect.value);
-    if (selected) applyPreset(selected);
+  presetPicker.addEventListener('click', () => {
+    renderPresetDialog();
+    presetDialog.showModal();
   });
 }
 
@@ -538,6 +586,10 @@ galleryClose.addEventListener('click', () => galleryDialog.close());
 galleryDialog.addEventListener('click', (event) => {
   if (event.target === galleryDialog) galleryDialog.close();
 });
+presetClose.addEventListener('click', () => presetDialog.close());
+presetDialog.addEventListener('click', (event) => {
+  if (event.target === presetDialog) presetDialog.close();
+});
 galleryUpload.addEventListener('change', uploadImage);
 
 const DEFAULT_IMAGES = { one: 'Default1.jpeg', two: 'Default2.jpeg' };
@@ -548,11 +600,11 @@ Object.entries(DEFAULT_IMAGES).forEach(([key, file]) => {
 form.addEventListener('submit', startTimer);
 originPicker.addEventListener('click', chooseOrigin);
 originPicker.addEventListener('keydown', moveOrigin);
+wipeOptionsContainer.addEventListener('change', syncOriginPicker);
 pauseButton.addEventListener('click', togglePause);
 fullscreenButton.addEventListener('click', toggleFullscreen);
 resetButton.addEventListener('click', resetTimer);
 document.addEventListener('fullscreenchange', syncFullscreenState);
-
 window.addEventListener('resize', () => {
   if (timerCard.classList.contains('is-running')) {
     const elapsed = isPaused
