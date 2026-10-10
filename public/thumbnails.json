@@ -28,5 +28,20 @@
     "id": "map-travel",
     "name": "Map Travel",
     "file": "thumbnails/map-travel.jpg"
+  },
+  {
+    "id": "blaze",
+    "name": "Blaze",
+    "file": "thumbnails/blaze.jpg"
+  },
+  {
+    "id": "bonfire",
+    "name": "Bonfire",
+    "file": "thumbnails/bonfire.jpg"
+  },
+  {
+    "id": "fireplace-drawing",
+    "name": "Fireplace Drawing",
+    "file": "thumbnails/fireplace-drawing.jpg"
   }
 ]

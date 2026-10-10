@@ -160,5 +160,50 @@
       "y": 0.5
     },
     "thumbnail": "thumbnails/map-travel.jpg"
+  },
+  {
+    "id": "blaze",
+    "name": "Blaze",
+    "imageOne": "Blaze1.jpeg",
+    "imageTwo": "Blaze2.jpeg",
+    "duration": 10,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 150,
+    "origin": {
+      "x": 0.49759615384615385,
+      "y": 0.7828191773504273
+    },
+    "thumbnail": "thumbnails/blaze.jpg"
+  },
+  {
+    "id": "bonfire",
+    "name": "Bonfire",
+    "imageOne": "DrawingFireplace1.jpeg",
+    "imageTwo": "DrawingFireplace2.jpeg",
+    "duration": 10,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5040064102564102,
+      "y": 0.3545673076923077
+    },
+    "thumbnail": "thumbnails/bonfire.jpg"
+  },
+  {
+    "id": "fireplace-drawing",
+    "name": "Fireplace Drawing",
+    "imageOne": "Bonfire1.jpeg",
+    "imageTwo": "Bonfire2.jpeg",
+    "duration": 10,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 100,
+    "origin": {
+      "x": 0.49919871794871795,
+      "y": 0.8629505124866453
+    },
+    "thumbnail": "thumbnails/fireplace-drawing.jpg"
   }
 ]
