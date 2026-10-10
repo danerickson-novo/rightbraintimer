@@ -46,13 +46,13 @@
     "name": "Nouveau Candles",
     "imageOne": "CandleNouveau1.jpeg",
     "imageTwo": "CandleNouveau2.jpeg",
-    "duration": 2,
+    "duration": 15,
     "wipeType": "circle",
     "direction": "inverse",
     "feather": 80,
     "origin": {
       "x": 0.7748397435897436,
-      "y": 0.2832198183760683
+      "y": 0.27460603632478625
     },
     "thumbnail": "thumbnails/nouveau-candles.jpg"
   },
@@ -64,10 +64,10 @@
     "duration": 5,
     "wipeType": "circle",
     "direction": "inverse",
-    "feather": 70,
+    "feather": 80,
     "origin": {
-      "x": 0.5093475486147608,
-      "y": 0.49103282143932553
+      "x": 0.5056089743589743,
+      "y": 0.4723557692307692
     },
     "thumbnail": "thumbnails/beach-salad.jpg"
   },
@@ -205,5 +205,50 @@
       "y": 0.8629505124866453
     },
     "thumbnail": "thumbnails/fireplace-drawing.jpg"
+  },
+  {
+    "id": "candle-demo-1-minute-circular-",
+    "name": "Candle Demo (1 minute circular)",
+    "imageOne": "Library1.jpeg",
+    "imageTwo": "Library2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 80,
+    "origin": {
+      "x": 0.007211538461538462,
+      "y": 0.3956997863247863
+    },
+    "thumbnail": "thumbnails/candle-demo-1-minute-circular-.jpg"
+  },
+  {
+    "id": "soft-horizon-10-min-crossfade-",
+    "name": "Soft Horizon (10 min Crossfade)",
+    "imageOne": "Sunrise1.jpeg",
+    "imageTwo": "Sunrise2.jpeg",
+    "duration": 10,
+    "wipeType": "crossfade",
+    "direction": "forward",
+    "feather": 80,
+    "origin": {
+      "x": 0.007211538461538462,
+      "y": 0.3956997863247863
+    },
+    "thumbnail": "thumbnails/soft-horizon-10-min-crossfade-.jpg"
+  },
+  {
+    "id": "sunfall-15-min-vertical-wipe-",
+    "name": "Sunfall (15 min Vertical Wipe)",
+    "imageOne": "Sunrise1.jpeg",
+    "imageTwo": "Sunrise2.jpeg",
+    "duration": 15,
+    "wipeType": "vertical",
+    "direction": "forward",
+    "feather": 200,
+    "origin": {
+      "x": 0.007211538461538462,
+      "y": 0.3956997863247863
+    },
+    "thumbnail": "thumbnails/sunfall-15-min-vertical-wipe-.jpg"
   }
 ]

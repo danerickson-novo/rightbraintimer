@@ -43,5 +43,30 @@
     "id": "fireplace-drawing",
     "name": "Fireplace Drawing",
     "file": "thumbnails/fireplace-drawing.jpg"
+  },
+  {
+    "id": "candle-demo-1-minute-circular-",
+    "name": "Candle Demo (1 minute circular)",
+    "file": "thumbnails/candle-demo-1-minute-circular-.jpg"
+  },
+  {
+    "id": "soft-horizon-10-min-crossfade-",
+    "name": "Soft Horizon (10 min Crossfade)",
+    "file": "thumbnails/soft-horizon-10-min-crossfade-.jpg"
+  },
+  {
+    "id": "sunfall-15-min-vertical-wipe-",
+    "name": "Sunfall (15 min Vertical Wipe)",
+    "file": "thumbnails/sunfall-15-min-vertical-wipe-.jpg"
+  },
+  {
+    "id": "nouveau-candles",
+    "name": "Nouveau Candles",
+    "file": "thumbnails/nouveau-candles.jpg"
+  },
+  {
+    "id": "beach-salad",
+    "name": "Beach Salad",
+    "file": "thumbnails/beach-salad.jpg"
   }
 ]
