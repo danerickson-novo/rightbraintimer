@@ -57,11 +57,9 @@ export const lumaCircularWipe = {
       Math.hypot(width - cx, height - cy)
     );
 
-    // 4. Buffered wave radius range ensuring clean 0% to 100% sweep with no initial snap
+    // 4. Buffered wave radius range using 1 * feather buffer
     const minWaveRadius = -1 * feather;
     const maxWaveRadius = farthestCorner + 1 * feather;
-    const activeProgress = direction === 'forward' ? progress : 1 - progress;
-    const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * activeProgress;
 
     let pixelIndex = 0;
     for (let y = 0; y < height; y++) {
@@ -79,15 +77,24 @@ export const lumaCircularWipe = {
         const L = 0.299 * r + 0.587 * g + 0.114 * b;
 
         const d = Math.hypot(x - cx, y - cy);
-
-        // High luminance areas get a head start, changing fastest
         const effDist = d - (L * feather * 1.2);
         
-        // Strictly contained within the feather band with explicit clamping [0, 1]
-        const distIntoWave = waveRadius - effDist;
         let alpha = 0;
-        if (distIntoWave > 0) {
-          alpha = Math.max(0, Math.min(1, distIntoWave / feather));
+
+        if (direction === 'forward') {
+          // Expanding outward from center
+          const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * progress;
+          const distIntoWave = waveRadius - effDist;
+          if (distIntoWave > 0) {
+            alpha = Math.max(0, Math.min(1, distIntoWave / feather));
+          }
+        } else {
+          // Collapsing inward from outside edge
+          const waveRadius = maxWaveRadius - (maxWaveRadius - minWaveRadius) * progress;
+          const distBehindWave = effDist - waveRadius;
+          if (distBehindWave > 0) {
+            alpha = Math.max(0, Math.min(1, distBehindWave / feather));
+          }
         }
 
         const byteVal = Math.round(alpha * 255);
