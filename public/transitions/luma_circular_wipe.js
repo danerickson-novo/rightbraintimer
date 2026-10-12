@@ -35,16 +35,25 @@ export const lumaCircularWipe = {
     canvas.height = height;
     const ctx = canvas.getContext('2d');
 
-    // Draw image at full container resolution
-    ctx.drawImage(this.imageObj, 0, 0, width, height);
+    // 1. Calculate exact 'contain' bounding box of the image
+    const natW = this.imageObj.naturalWidth || width;
+    const natH = this.imageObj.naturalHeight || height;
+    const scale = Math.min(width / natW, height / natH);
+    const fittedWidth = natW * scale;
+    const fittedHeight = natH * scale;
+    const imgLeft = (width - fittedWidth) / 2;
+    const imgTop = (height - fittedHeight) / 2;
+
+    // 2. Draw image into its exact containment box for pixel sampling
+    ctx.drawImage(this.imageObj, imgLeft, imgTop, fittedWidth, fittedHeight);
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
     const farthestCorner = Math.max(
-      Math.hypot(cx, cy),
-      Math.hypot(width - cx, cy),
-      Math.hypot(cx, height - cy),
-      Math.hypot(width - cx, height - cy)
+      Math.hypot(cx, imgTop),
+      Math.hypot(width - cx, imgTop),
+      Math.hypot(cx, height - imgTop),
+      Math.hypot(width - cx, height - imgTop)
     );
     const maxDist = farthestCorner + feather / 2 + 1;
     const maxRadiusBuffered = maxDist + feather / 2;
@@ -54,6 +63,13 @@ export const lumaCircularWipe = {
     let pixelIndex = 0;
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
+        // If outside the actual contained image bounds, keep fully transparent
+        if (x < imgLeft || x >= imgLeft + fittedWidth || y < imgTop || y >= imgTop + fittedHeight) {
+          pixels[pixelIndex + 3] = 0;
+          pixelIndex += 4;
+          continue;
+        }
+
         const r = pixels[pixelIndex] / 255;
         const g = pixels[pixelIndex + 1] / 255;
         const b = pixels[pixelIndex + 2] / 255;
