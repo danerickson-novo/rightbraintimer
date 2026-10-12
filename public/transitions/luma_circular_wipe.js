@@ -58,7 +58,7 @@ export const lumaCircularWipe = {
     );
 
     // 4. Buffered wave radius range ensuring clean 0% to 100% sweep with no initial snap
-    const minWaveRadius = -2 * feather;
+    const minWaveRadius = -1 * feather;
     const maxWaveRadius = farthestCorner + 2 * feather;
     const activeProgress = direction === 'forward' ? progress : 1 - progress;
     const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * activeProgress;
