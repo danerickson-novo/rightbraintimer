@@ -5,38 +5,18 @@ export const lumaCircularWipe = {
   supportsFeather: true,
   iconSvg: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" /><path d="M12 8v8m-4-4h8" stroke="currentColor" stroke-width="1.5"/></svg>`,
   
-  lumaData: null,
-  cachedWidth: 0,
-  cachedHeight: 0,
+  imageObj: null,
   imageUrl: null,
 
-  async init(imageTwoUrl, sampleWidth = 300, sampleHeight = 169) {
-    if (this.imageUrl === imageTwoUrl && this.lumaData) return;
+  async init(imageTwoUrl) {
+    if (this.imageUrl === imageTwoUrl && this.imageObj) return;
     this.imageUrl = imageTwoUrl;
-    this.cachedWidth = sampleWidth;
-    this.cachedHeight = sampleHeight;
 
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = sampleWidth;
-        canvas.height = sampleHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, sampleWidth, sampleHeight);
-        const imgData = ctx.getImageData(0, 0, sampleWidth, sampleHeight);
-        const data = imgData.data;
-        const luma = new Float32Array(sampleWidth * sampleHeight);
-
-        for (let i = 0, j = 0; i < data.length; i += 4, j++) {
-          const r = data[i] / 255;
-          const g = data[i + 1] / 255;
-          const b = data[i + 2] / 255;
-          // Standard Rec. 709 luminance
-          luma[j] = 0.299 * r + 0.587 * g + 0.114 * b;
-        }
-        this.lumaData = luma;
+        this.imageObj = img;
         resolve();
       };
       img.onerror = () => resolve();
@@ -45,58 +25,59 @@ export const lumaCircularWipe = {
   },
 
   render(progress, { cx, cy, width, height, direction = 'forward', feather = 60 }) {
-    if (!this.lumaData || width <= 0 || height <= 0) {
-      return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${progress * width}px, transparent ${progress * width + feather}px)` };
+    if (!this.imageObj || width <= 0 || height <= 0) {
+      const fallbackRadius = progress * Math.hypot(width, height);
+      return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${fallbackRadius}px, transparent ${fallbackRadius + feather}px)` };
     }
 
-    const sw = this.cachedWidth;
-    const sh = this.cachedHeight;
     const canvas = document.createElement('canvas');
-    canvas.width = sw;
-    canvas.height = sh;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext('2d');
-    const imgData = ctx.createImageData(sw, sh);
+
+    // Draw image at full container resolution
+    ctx.drawImage(this.imageObj, 0, 0, width, height);
+    const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    const scaleX = sw / width;
-    const scaleY = sh / height;
-    const sampleCx = cx * scaleX;
-    const sampleCy = cy * scaleY;
-    const sampleFeather = feather * ((scaleX + scaleY) / 2);
-
     const farthestCorner = Math.max(
-      Math.hypot(sampleCx, sampleCy),
-      Math.hypot(sw - sampleCx, sampleCy),
-      Math.hypot(sampleCx, sh - sampleCy),
-      Math.hypot(sw - sampleCx, sh - sampleCy)
+      Math.hypot(cx, cy),
+      Math.hypot(width - cx, cy),
+      Math.hypot(cx, height - cy),
+      Math.hypot(width - cx, height - cy)
     );
-    const maxDist = farthestCorner + sampleFeather / 2 + 1;
-    const maxRadiusBuffered = maxDist + sampleFeather / 2;
+    const maxDist = farthestCorner + feather / 2 + 1;
+    const maxRadiusBuffered = maxDist + feather / 2;
     const activeProgress = direction === 'forward' ? progress : 1 - progress;
     const waveRadius = maxRadiusBuffered * activeProgress;
 
-    let lumaIndex = 0;
-    for (let y = 0; y < sh; y++) {
-      for (let x = 0; x < sw; x++) {
-        const d = Math.hypot(x - sampleCx, y - sampleCy);
-        const L = this.lumaData[lumaIndex++];
+    let pixelIndex = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const r = pixels[pixelIndex] / 255;
+        const g = pixels[pixelIndex + 1] / 255;
+        const b = pixels[pixelIndex + 2] / 255;
+        const L = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        const d = Math.hypot(x - cx, y - cy);
 
         // High luminance areas get a head start, changing fastest
-        const effDist = d - (L * sampleFeather * 1.2);
+        const effDist = d - (L * feather * 1.2);
         
         // Strictly contained within the feather band
         const distIntoWave = waveRadius - effDist;
         let alpha = 0;
         if (distIntoWave > 0) {
-          alpha = Math.min(1, distIntoWave / sampleFeather);
+          alpha = Math.min(1, distIntoWave / feather);
         }
 
-        const idx = (y * sw + x) * 4;
         const byteVal = Math.round(alpha * 255);
-        pixels[idx] = 0;
-        pixels[idx + 1] = 0;
-        pixels[idx + 2] = 0;
-        pixels[idx + 3] = byteVal;
+        pixels[pixelIndex] = 0;
+        pixels[pixelIndex + 1] = 0;
+        pixels[pixelIndex + 2] = 0;
+        pixels[pixelIndex + 3] = byteVal;
+
+        pixelIndex += 4;
       }
     }
 
