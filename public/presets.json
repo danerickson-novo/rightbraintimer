@@ -160,5 +160,20 @@
       "y": 0.34287013067061145
     },
     "thumbnail": "thumbnails/slow-candles.jpg"
+  },
+  {
+    "id": "luma-candle-demo",
+    "name": "Luma Candle Demo",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "thumbnail": "thumbnails/luma-candle-demo.jpg"
   }
 ]

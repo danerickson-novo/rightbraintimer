@@ -28,5 +28,10 @@
     "id": "slow-candles",
     "name": "Slow Candles",
     "file": "thumbnails/slow-candles.jpg"
+  },
+  {
+    "id": "luma-candle-demo",
+    "name": "Luma Candle Demo",
+    "file": "thumbnails/luma-candle-demo.jpg"
   }
 ]
