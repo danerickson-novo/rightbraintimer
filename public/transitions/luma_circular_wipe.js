@@ -49,11 +49,12 @@ export const lumaCircularWipe = {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
+    // 3. Correctly calculate farthest corner distance using origin (cx, cy)
     const farthestCorner = Math.max(
-      Math.hypot(cx, imgTop),
-      Math.hypot(width - cx, imgTop),
-      Math.hypot(cx, height - imgTop),
-      Math.hypot(width - cx, height - imgTop)
+      Math.hypot(cx, cy),
+      Math.hypot(width - cx, cy),
+      Math.hypot(cx, height - cy),
+      Math.hypot(width - cx, height - cy)
     );
     const maxDist = farthestCorner + feather / 2 + 1;
     const maxRadiusBuffered = maxDist + feather / 2;
