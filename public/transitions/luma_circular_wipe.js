@@ -56,10 +56,12 @@ export const lumaCircularWipe = {
       Math.hypot(cx, height - cy),
       Math.hypot(width - cx, height - cy)
     );
-    const maxDist = farthestCorner + feather / 2 + 1;
-    const maxRadiusBuffered = maxDist + feather / 2;
+
+    // 4. Buffered wave radius range ensuring clean 0% to 100% sweep with no initial snap
+    const minWaveRadius = -2 * feather;
+    const maxWaveRadius = farthestCorner + 2 * feather;
     const activeProgress = direction === 'forward' ? progress : 1 - progress;
-    const waveRadius = maxRadiusBuffered * activeProgress;
+    const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * activeProgress;
 
     let pixelIndex = 0;
     for (let y = 0; y < height; y++) {
@@ -81,11 +83,11 @@ export const lumaCircularWipe = {
         // High luminance areas get a head start, changing fastest
         const effDist = d - (L * feather * 1.2);
         
-        // Strictly contained within the feather band
+        // Strictly contained within the feather band with explicit clamping [0, 1]
         const distIntoWave = waveRadius - effDist;
         let alpha = 0;
         if (distIntoWave > 0) {
-          alpha = Math.min(1, distIntoWave / feather);
+          alpha = Math.max(0, Math.min(1, distIntoWave / feather));
         }
 
         const byteVal = Math.round(alpha * 255);
