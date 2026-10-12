@@ -435,7 +435,7 @@ function renderGallery(files) {
   });
 }
 
-function applyImage(slot, url, label, file = null) {
+/*function applyImage(slot, url, label, file = null) {
   const imageValue = `url("${url}")`;
   slot.layer.style.backgroundImage = imageValue;
   slot.thumb.style.backgroundImage = imageValue;
@@ -448,6 +448,35 @@ function applyImage(slot, url, label, file = null) {
       slot.onDimensions(loadedImage.naturalWidth, loadedImage.naturalHeight);
     });
     loadedImage.src = url;
+  }
+}
+*/
+async function applyImage(slot, url, label, file = null) {
+  const imageValue = `url("${url}")`;
+  slot.layer.style.backgroundImage = imageValue;
+  slot.thumb.style.backgroundImage = imageValue;
+  slot.name.textContent = label;
+  slot.file = file;
+
+  if (slot.onDimensions) {
+    const loadedImage = new Image();
+    loadedImage.addEventListener('load', () => {
+      slot.onDimensions(loadedImage.naturalWidth, loadedImage.naturalHeight);
+    });
+    loadedImage.src = url;
+  }
+
+  // If this is the finishing image (slot two), pre-analyze luminance for luma-circle
+  if (slot === slots.two) {
+    const lumaTransition = transitionsRegistry.get('luma-circle');
+    if (lumaTransition && typeof lumaTransition.init === 'function') {
+      await lumaTransition.init(url);
+    }
+  }
+
+  // If you are in admin.js, also trigger thumbnail update:
+  if (typeof generateThumbnailAt50Percent === 'function') {
+    generateThumbnailAt50Percent();
   }
 }
 
