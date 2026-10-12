@@ -145,5 +145,20 @@
       "y": 0.6105435363247862
     },
     "thumbnail": "thumbnails/dream-car.jpg"
+  },
+  {
+    "id": "slow-candles",
+    "name": "Slow Candles",
+    "imageOne": "Candles1.jpg",
+    "imageTwo": "Candles2.jpg",
+    "duration": 5,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.5104166666666666,
+      "y": 0.34287013067061145
+    },
+    "thumbnail": "thumbnails/slow-candles.jpg"
   }
 ]
