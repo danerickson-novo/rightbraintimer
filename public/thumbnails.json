@@ -33,5 +33,15 @@
     "id": "luma-candle-demo",
     "name": "Luma Candle Demo",
     "file": "thumbnails/luma-candle-demo.jpg"
+  },
+  {
+    "id": "beach-salad-luma-200",
+    "name": "Beach Salad Luma 200",
+    "file": "thumbnails/beach-salad-luma-200.jpg"
+  },
+  {
+    "id": "drawing-fireplace-luma-200",
+    "name": "Drawing Fireplace Luma 200",
+    "file": "thumbnails/drawing-fireplace-luma-200.jpg"
   }
 ]

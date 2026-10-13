@@ -175,5 +175,35 @@
       "y": 0.5
     },
     "thumbnail": "thumbnails/luma-candle-demo.jpg"
+  },
+  {
+    "id": "beach-salad-luma-200",
+    "name": "Beach Salad Luma 200",
+    "imageOne": "BeachSalad1.png",
+    "imageTwo": "BeachSalad2.png",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
+    "origin": {
+      "x": 0.5072115384615384,
+      "y": 0.4699519230769231
+    },
+    "thumbnail": "thumbnails/beach-salad-luma-200.jpg"
+  },
+  {
+    "id": "drawing-fireplace-luma-200",
+    "name": "Drawing Fireplace Luma 200",
+    "imageOne": "DrawingFireplace1.jpeg",
+    "imageTwo": "DrawingFireplace2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
+    "origin": {
+      "x": 0.5072115384615384,
+      "y": 0.4699519230769231
+    },
+    "thumbnail": "thumbnails/drawing-fireplace-luma-200.jpg"
   }
 ]
