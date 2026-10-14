@@ -58,5 +58,10 @@
     "id": "christmas-decorations",
     "name": "Christmas Decorations",
     "file": "thumbnails/christmas-decorations.jpg"
+  },
+  {
+    "id": "christmas-feast",
+    "name": "Christmas Feast",
+    "file": "thumbnails/christmas-feast.jpg"
   }
 ]
