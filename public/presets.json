@@ -205,5 +205,20 @@
       "y": 0.4699519230769231
     },
     "thumbnail": "thumbnails/drawing-fireplace-luma-200.jpg"
+  },
+  {
+    "id": "beach-pasta",
+    "name": "Beach Pasta",
+    "imageOne": "BeachPasta1.jpeg",
+    "imageTwo": "BeachPasta2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "thumbnail": "thumbnails/beach-pasta.jpg"
   }
 ]
