@@ -48,5 +48,10 @@
     "id": "beach-pasta",
     "name": "Beach Pasta",
     "file": "thumbnails/beach-pasta.jpg"
+  },
+  {
+    "id": "candle-spiral",
+    "name": "Candle Spiral",
+    "file": "thumbnails/candle-spiral.jpg"
   }
 ]

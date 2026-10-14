@@ -220,5 +220,20 @@
       "y": 0.5
     },
     "thumbnail": "thumbnails/beach-pasta.jpg"
+  },
+  {
+    "id": "candle-spiral",
+    "name": "Candle Spiral",
+    "imageOne": "CandleSpiral1.jpeg",
+    "imageTwo": "CandleSpiral2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.5032051282051282,
+      "y": 0.4750267094017094
+    },
+    "thumbnail": "thumbnails/candle-spiral.jpg"
   }
 ]
