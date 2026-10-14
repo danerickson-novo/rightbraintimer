@@ -77,19 +77,21 @@ export const lumaCircularWipe = {
         const L = 0.299 * r + 0.587 * g + 0.114 * b;
 
         const d = Math.hypot(x - cx, y - cy);
-        const effDist = d - (L * feather * 1.2);
         
+        let effDist;
         let alpha = 0;
 
         if (direction === 'forward') {
-          // Expanding outward from center
+          // Expanding outward from center: bright points get head start (smaller effDist)
+          effDist = d - (L * feather * 1.2);
           const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * progress;
           const distIntoWave = waveRadius - effDist;
           if (distIntoWave > 0) {
             alpha = Math.max(0, Math.min(1, distIntoWave / feather));
           }
         } else {
-          // Collapsing inward from outside edge
+          // Collapsing inward from outside edge: bright points get head start (larger effDist)
+          effDist = d + (L * feather * 1.2);
           const waveRadius = maxWaveRadius - (maxWaveRadius - minWaveRadius) * progress;
           const distBehindWave = effDist - waveRadius;
           if (distBehindWave > 0) {

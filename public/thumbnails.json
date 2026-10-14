@@ -25,48 +25,23 @@
     "file": "thumbnails/dream-car.jpg"
   },
   {
-    "id": "map-travel",
-    "name": "Map Travel",
-    "file": "thumbnails/map-travel.jpg"
+    "id": "slow-candles",
+    "name": "Slow Candles",
+    "file": "thumbnails/slow-candles.jpg"
   },
   {
-    "id": "blaze",
-    "name": "Blaze",
-    "file": "thumbnails/blaze.jpg"
+    "id": "luma-candle-demo",
+    "name": "Luma Candle Demo",
+    "file": "thumbnails/luma-candle-demo.jpg"
   },
   {
-    "id": "bonfire",
-    "name": "Bonfire",
-    "file": "thumbnails/bonfire.jpg"
+    "id": "beach-salad-luma-200",
+    "name": "Beach Salad Luma 200",
+    "file": "thumbnails/beach-salad-luma-200.jpg"
   },
   {
-    "id": "fireplace-drawing",
-    "name": "Fireplace Drawing",
-    "file": "thumbnails/fireplace-drawing.jpg"
-  },
-  {
-    "id": "candle-demo-1-minute-circular-",
-    "name": "Candle Demo (1 minute circular)",
-    "file": "thumbnails/candle-demo-1-minute-circular-.jpg"
-  },
-  {
-    "id": "soft-horizon-10-min-crossfade-",
-    "name": "Soft Horizon (10 min Crossfade)",
-    "file": "thumbnails/soft-horizon-10-min-crossfade-.jpg"
-  },
-  {
-    "id": "sunfall-15-min-vertical-wipe-",
-    "name": "Sunfall (15 min Vertical Wipe)",
-    "file": "thumbnails/sunfall-15-min-vertical-wipe-.jpg"
-  },
-  {
-    "id": "nouveau-candles",
-    "name": "Nouveau Candles",
-    "file": "thumbnails/nouveau-candles.jpg"
-  },
-  {
-    "id": "beach-salad",
-    "name": "Beach Salad",
-    "file": "thumbnails/beach-salad.jpg"
+    "id": "drawing-fireplace-luma-200",
+    "name": "Drawing Fireplace Luma 200",
+    "file": "thumbnails/drawing-fireplace-luma-200.jpg"
   }
 ]

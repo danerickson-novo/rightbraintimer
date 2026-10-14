@@ -1,16 +1,58 @@
 [
   {
+    "id": "candle-demo",
+    "name": "Candle Demo (1 minute circular)",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 60,
+    "origin": {
+      "x": 0,
+      "y": 0.4
+    }
+  },
+  {
+    "id": "soft-horizon",
+    "name": "Soft Horizon (10 min Crossfade)",
+    "imageOne": "Sunrise1.jpeg",
+    "imageTwo": "Sunrise2.jpeg",
+    "duration": 1,
+    "wipeType": "crossfade",
+    "direction": "forward",
+    "feather": 0,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    }
+  },
+  {
+    "id": "top-down",
+    "name": "Sunfall (15 min Vertical Wipe)",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 15,
+    "wipeType": "vertical",
+    "direction": "forward",
+    "feather": 80,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    }
+  },
+  {
     "id": "nouveau-candles",
     "name": "Nouveau Candles",
     "imageOne": "CandleNouveau1.jpeg",
     "imageTwo": "CandleNouveau2.jpeg",
-    "duration": 15,
+    "duration": 2,
     "wipeType": "circle",
     "direction": "inverse",
     "feather": 80,
     "origin": {
       "x": 0.7748397435897436,
-      "y": 0.27460603632478625
+      "y": 0.2832198183760683
     },
     "thumbnail": "thumbnails/nouveau-candles.jpg"
   },
@@ -22,10 +64,10 @@
     "duration": 5,
     "wipeType": "circle",
     "direction": "inverse",
-    "feather": 80,
+    "feather": 70,
     "origin": {
-      "x": 0.5056089743589743,
-      "y": 0.4723557692307692
+      "x": 0.5093475486147608,
+      "y": 0.49103282143932553
     },
     "thumbnail": "thumbnails/beach-salad.jpg"
   },
@@ -105,108 +147,63 @@
     "thumbnail": "thumbnails/dream-car.jpg"
   },
   {
-    "id": "map-travel",
-    "name": "Map Travel",
-    "imageOne": "USMap1.jpeg",
-    "imageTwo": "USMap2.jpeg",
-    "duration": 10,
-    "wipeType": "horizontal",
-    "direction": "forward",
-    "feather": 20,
+    "id": "slow-candles",
+    "name": "Slow Candles",
+    "imageOne": "Candles1.jpg",
+    "imageTwo": "Candles2.jpg",
+    "duration": 5,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.5104166666666666,
+      "y": 0.34287013067061145
+    },
+    "thumbnail": "thumbnails/slow-candles.jpg"
+  },
+  {
+    "id": "luma-candle-demo",
+    "name": "Luma Candle Demo",
+    "imageOne": "Default1.jpeg",
+    "imageTwo": "Default2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
     "origin": {
       "x": 0.5,
       "y": 0.5
     },
-    "thumbnail": "thumbnails/map-travel.jpg"
+    "thumbnail": "thumbnails/luma-candle-demo.jpg"
   },
   {
-    "id": "blaze",
-    "name": "Blaze",
-    "imageOne": "Blaze1.jpeg",
-    "imageTwo": "Blaze2.jpeg",
-    "duration": 10,
-    "wipeType": "circle",
-    "direction": "forward",
-    "feather": 150,
-    "origin": {
-      "x": 0.49759615384615385,
-      "y": 0.7828191773504273
-    },
-    "thumbnail": "thumbnails/blaze.jpg"
-  },
-  {
-    "id": "bonfire",
-    "name": "Bonfire",
-    "imageOne": "DrawingFireplace1.jpeg",
-    "imageTwo": "DrawingFireplace2.jpeg",
-    "duration": 10,
-    "wipeType": "circle",
-    "direction": "inverse",
-    "feather": 100,
-    "origin": {
-      "x": 0.5040064102564102,
-      "y": 0.3545673076923077
-    },
-    "thumbnail": "thumbnails/bonfire.jpg"
-  },
-  {
-    "id": "fireplace-drawing",
-    "name": "Fireplace Drawing",
-    "imageOne": "Bonfire1.jpeg",
-    "imageTwo": "Bonfire2.jpeg",
-    "duration": 10,
-    "wipeType": "circle",
-    "direction": "forward",
-    "feather": 100,
-    "origin": {
-      "x": 0.49919871794871795,
-      "y": 0.8629505124866453
-    },
-    "thumbnail": "thumbnails/fireplace-drawing.jpg"
-  },
-  {
-    "id": "candle-demo-1-minute-circular-",
-    "name": "Candle Demo (1 minute circular)",
-    "imageOne": "Library1.jpeg",
-    "imageTwo": "Library2.jpeg",
+    "id": "beach-salad-luma-200",
+    "name": "Beach Salad Luma 200",
+    "imageOne": "BeachSalad1.png",
+    "imageTwo": "BeachSalad2.png",
     "duration": 1,
-    "wipeType": "circle",
-    "direction": "forward",
-    "feather": 80,
-    "origin": {
-      "x": 0.007211538461538462,
-      "y": 0.3956997863247863
-    },
-    "thumbnail": "thumbnails/candle-demo-1-minute-circular-.jpg"
-  },
-  {
-    "id": "soft-horizon-10-min-crossfade-",
-    "name": "Soft Horizon (10 min Crossfade)",
-    "imageOne": "Sunrise1.jpeg",
-    "imageTwo": "Sunrise2.jpeg",
-    "duration": 10,
-    "wipeType": "crossfade",
-    "direction": "forward",
-    "feather": 80,
-    "origin": {
-      "x": 0.007211538461538462,
-      "y": 0.3956997863247863
-    },
-    "thumbnail": "thumbnails/soft-horizon-10-min-crossfade-.jpg"
-  },
-  {
-    "id": "sunfall-15-min-vertical-wipe-",
-    "name": "Sunfall (15 min Vertical Wipe)",
-    "imageOne": "Sunrise1.jpeg",
-    "imageTwo": "Sunrise2.jpeg",
-    "duration": 15,
-    "wipeType": "vertical",
-    "direction": "forward",
+    "wipeType": "luma-circle",
+    "direction": "inverse",
     "feather": 200,
     "origin": {
-      "x": 0.007211538461538462,
-      "y": 0.3956997863247863
+      "x": 0.5072115384615384,
+      "y": 0.4699519230769231
     },
-    "thumbnail": "thumbnails/sunfall-15-min-vertical-wipe-.jpg"
+    "thumbnail": "thumbnails/beach-salad-luma-200.jpg"
+  },
+  {
+    "id": "drawing-fireplace-luma-200",
+    "name": "Drawing Fireplace Luma 200",
+    "imageOne": "DrawingFireplace1.jpeg",
+    "imageTwo": "DrawingFireplace2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 200,
+    "origin": {
+      "x": 0.5072115384615384,
+      "y": 0.4699519230769231
+    },
+    "thumbnail": "thumbnails/drawing-fireplace-luma-200.jpg"
   }
 ]
