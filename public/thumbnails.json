@@ -43,5 +43,15 @@
     "id": "drawing-fireplace-luma-200",
     "name": "Drawing Fireplace Luma 200",
     "file": "thumbnails/drawing-fireplace-luma-200.jpg"
+  },
+  {
+    "id": "beach-pasta",
+    "name": "Beach Pasta",
+    "file": "thumbnails/beach-pasta.jpg"
+  },
+  {
+    "id": "candle-spiral",
+    "name": "Candle Spiral",
+    "file": "thumbnails/candle-spiral.jpg"
   }
 ]
