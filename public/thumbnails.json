@@ -53,5 +53,10 @@
     "id": "candle-spiral",
     "name": "Candle Spiral",
     "file": "thumbnails/candle-spiral.jpg"
+  },
+  {
+    "id": "christmas-decorations",
+    "name": "Christmas Decorations",
+    "file": "thumbnails/christmas-decorations.jpg"
   }
 ]

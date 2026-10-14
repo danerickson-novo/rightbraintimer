@@ -235,5 +235,20 @@
       "y": 0.4750267094017094
     },
     "thumbnail": "thumbnails/candle-spiral.jpg"
+  },
+  {
+    "id": "christmas-decorations",
+    "name": "Christmas Decorations",
+    "imageOne": "Christmas1.jpeg",
+    "imageTwo": "Christmas2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "forward",
+    "feather": 100,
+    "origin": {
+      "x": 0.9879807692307693,
+      "y": 0.5703458867521367
+    },
+    "thumbnail": "thumbnails/christmas-decorations.jpg"
   }
 ]
