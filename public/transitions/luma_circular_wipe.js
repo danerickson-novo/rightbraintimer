@@ -57,10 +57,6 @@ export const lumaCircularWipe = {
       Math.hypot(cx - (imgLeft + fittedWidth), cy - (imgTop + fittedHeight))
     );
 
-    // 4. Tightened wave range removing dead-time lag at start and end
-    const minWaveRadius = -1 * feather;
-    const maxWaveRadius = maxDistToImage + feather;
-
     let pixelIndex = 0;
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -78,22 +74,22 @@ export const lumaCircularWipe = {
 
         const d = Math.hypot(x - cx, y - cy);
         
-        let effDist;
         let alpha = 0;
 
         if (direction === 'forward') {
-          // Expanding outward from center: bright points get head start (smaller effDist)
-          effDist = d - (L * feather * 1.2);
-          const waveRadius = minWaveRadius + (maxWaveRadius - minWaveRadius) * progress;
-          const distIntoWave = waveRadius - effDist;
+          // Expanding outward from center: zero dead time, bright points get head start
+          const arrivalRadius = Math.max(0, d - (L * feather));
+          const waveRadius = maxDistToImage * progress;
+          const distIntoWave = waveRadius - arrivalRadius;
           if (distIntoWave > 0) {
             alpha = Math.max(0, Math.min(1, distIntoWave / feather));
           }
         } else {
-          // Collapsing inward from outside edge: bright points get head start (larger effDist)
-          effDist = d + (L * feather * 1.2);
-          const waveRadius = maxWaveRadius - (maxWaveRadius - minWaveRadius) * progress;
-          const distBehindWave = effDist - waveRadius;
+          // Collapsing inward from outside edge: zero dead time, bright points get head start
+          const arrivalRadius = d + (L * feather);
+          const maxWaveRadius = maxDistToImage + feather;
+          const waveRadius = maxWaveRadius * (1 - progress);
+          const distBehindWave = arrivalRadius - waveRadius;
           if (distBehindWave > 0) {
             alpha = Math.max(0, Math.min(1, distBehindWave / feather));
           }
