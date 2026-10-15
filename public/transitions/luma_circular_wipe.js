@@ -49,17 +49,17 @@ export const lumaCircularWipe = {
     const imgData = ctx.getImageData(0, 0, width, height);
     const pixels = imgData.data;
 
-    // 3. Calculate farthest corner distance using origin (cx, cy)
-    const farthestCorner = Math.max(
-      Math.hypot(cx, cy),
-      Math.hypot(width - cx, cy),
-      Math.hypot(cx, height - cy),
-      Math.hypot(width - cx, height - cy)
+    // 3. Calculate max distance from origin to the actual image cover corners
+    const maxDistToImage = Math.max(
+      Math.hypot(cx - imgLeft, cy - imgTop),
+      Math.hypot(cx - (imgLeft + fittedWidth), cy - imgTop),
+      Math.hypot(cx - imgLeft, cy - (imgTop + fittedHeight)),
+      Math.hypot(cx - (imgLeft + fittedWidth), cy - (imgTop + fittedHeight))
     );
 
-    // 4. Buffered wave radius range using 1 * feather buffer
+    // 4. Tightened wave range removing dead-time lag at start and end
     const minWaveRadius = -1 * feather;
-    const maxWaveRadius = farthestCorner + 1 * feather;
+    const maxWaveRadius = maxDistToImage + feather;
 
     let pixelIndex = 0;
     for (let y = 0; y < height; y++) {
