@@ -78,7 +78,7 @@ export const lumaCircularWipe = {
 
         if (direction === 'forward') {
           // Expanding outward from center: zero dead time, bright points get head start
-          const arrivalRadius = Math.max(0, d - (L * 2 * feather));
+          const arrivalRadius = Math.max(0, d - (L * feather));
           const waveRadius = maxDistToImage * progress;
           const distIntoWave = waveRadius - arrivalRadius;
           if (distIntoWave > 0) {
