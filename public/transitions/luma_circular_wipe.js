@@ -86,7 +86,7 @@ export const lumaCircularWipe = {
           }
         } else {
           // Collapsing inward from outside edge: zero dead time, bright points get head start
-          const arrivalRadius = d + (L * 2 * feather);
+          const arrivalRadius = d + (L * feather);
           const maxWaveRadius = maxDistToImage + feather;
           const waveRadius = maxWaveRadius * (1 - progress);
           const distBehindWave = arrivalRadius - waveRadius;
