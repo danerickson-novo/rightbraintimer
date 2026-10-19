@@ -63,5 +63,45 @@
     "id": "christmas-feast",
     "name": "Christmas Feast",
     "file": "thumbnails/christmas-feast.jpg"
+  },
+  {
+    "id": "art-studio",
+    "name": "Art Studio",
+    "file": "thumbnails/art-studio.jpg"
+  },
+  {
+    "id": "shag-rug",
+    "name": "Shag Rug",
+    "file": "thumbnails/shag-rug.jpg"
+  },
+  {
+    "id": "house-paint",
+    "name": "House Paint",
+    "file": "thumbnails/house-paint.jpg"
+  },
+  {
+    "id": "skin-swap",
+    "name": "Skin Swap",
+    "file": "thumbnails/skin-swap.jpg"
+  },
+  {
+    "id": "read-your-bible",
+    "name": "Read Your Bible",
+    "file": "thumbnails/read-your-bible.jpg"
+  },
+  {
+    "id": "clean-your-garage",
+    "name": "Clean Your Garage",
+    "file": "thumbnails/clean-your-garage.jpg"
+  },
+  {
+    "id": "clean-your-kitchen",
+    "name": "Clean Your Kitchen",
+    "file": "thumbnails/clean-your-kitchen.jpg"
+  },
+  {
+    "id": "unmask-a-predator",
+    "name": "Unmask a Predator",
+    "file": "thumbnails/unmask-a-predator.jpg"
   }
 ]

@@ -265,5 +265,125 @@
       "y": 0.00470753205128196
     },
     "thumbnail": "thumbnails/christmas-feast.jpg"
+  },
+  {
+    "id": "art-studio",
+    "name": "Art Studio",
+    "imageOne": "ArtStudio1.jpeg",
+    "imageTwo": "ArtStudio2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.4495192307692308,
+      "y": 0.36044337606837606
+    },
+    "thumbnail": "thumbnails/art-studio.jpg"
+  },
+  {
+    "id": "shag-rug",
+    "name": "Shag Rug",
+    "imageOne": "ShagRug1.jpeg",
+    "imageTwo": "ShagRug2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 50,
+    "origin": {
+      "x": 0.5024038461538461,
+      "y": 0.4956931089743589
+    },
+    "thumbnail": "thumbnails/shag-rug.jpg"
+  },
+  {
+    "id": "house-paint",
+    "name": "House Paint",
+    "imageOne": "Gemini_Generated_Image_pzgwvapzgwvapzgw.jpeg",
+    "imageTwo": "Gemini_Generated_Image_pzgwvapzgwvapzgw (1).jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 50,
+    "origin": {
+      "x": 0.2107371794871795,
+      "y": 0.4899505876068375
+    },
+    "thumbnail": "thumbnails/house-paint.jpg"
+  },
+  {
+    "id": "skin-swap",
+    "name": "Skin Swap",
+    "imageOne": "SnakeRabbit1.jpeg",
+    "imageTwo": "SnakeRabbit2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "forward",
+    "feather": 50,
+    "origin": {
+      "x": 0.9943910256410257,
+      "y": 0.3578725961538461
+    },
+    "thumbnail": "thumbnails/skin-swap.jpg"
+  },
+  {
+    "id": "read-your-bible",
+    "name": "Read Your Bible",
+    "imageOne": "Bible1.jpeg",
+    "imageTwo": "Bible2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.43669871794871795,
+      "y": 0.23410790598290598
+    },
+    "thumbnail": "thumbnails/read-your-bible.jpg"
+  },
+  {
+    "id": "clean-your-garage",
+    "name": "Clean Your Garage",
+    "imageOne": "Garage2.jpeg",
+    "imageTwo": "Garage1.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5889423076923077,
+      "y": 0.8217147435897436
+    },
+    "thumbnail": "thumbnails/clean-your-garage.jpg"
+  },
+  {
+    "id": "clean-your-kitchen",
+    "name": "Clean Your Kitchen",
+    "imageOne": "Kitchen1.jpeg",
+    "imageTwo": "Kitchen2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.6546474358974359,
+      "y": 0.9245459401709402
+    },
+    "thumbnail": "thumbnails/clean-your-kitchen.jpg"
+  },
+  {
+    "id": "unmask-a-predator",
+    "name": "Unmask a Predator",
+    "imageOne": "WolfSheep2.jpeg",
+    "imageTwo": "WolfSheep1.jpg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.6418269230769231,
+      "y": 0.3550013354700854
+    },
+    "thumbnail": "thumbnails/unmask-a-predator.jpg"
   }
 ]
