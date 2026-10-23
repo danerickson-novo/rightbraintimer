@@ -4,13 +4,22 @@ export const lumaCircularWipe = {
   supportsOrigin: true,
   supportsFeather: true,
   iconSvg: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" /><path d="M12 8v8m-4-4h8" stroke="currentColor" stroke-width="1.5"/></svg>`,
-  
+
   imageObj: null,
   imageUrl: null,
+
+  // Cached per (image, size)
+  _canvas: null,
+  _ctx: null,
+  _imgData: null,
+  _lum: null,      // Float32Array of luminance 0..1
+  _arrival: null,  // Float32Array scratch buffer
+  _cacheKey: '',
 
   async init(imageTwoUrl) {
     if (this.imageUrl === imageTwoUrl && this.imageObj) return;
     this.imageUrl = imageTwoUrl;
+    this._cacheKey = ''; // invalidate
 
     return new Promise((resolve) => {
       const img = new Image();
@@ -24,89 +33,98 @@ export const lumaCircularWipe = {
     });
   },
 
-  render(progress, { cx, cy, width, height, direction = 'forward', feather = 60 }) {
-    if (!this.imageObj || width <= 0 || height <= 0) {
-      const fallbackRadius = progress * Math.hypot(width, height);
-      return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${fallbackRadius}px, transparent ${fallbackRadius + feather}px)` };
-    }
+  // Sample the image once per size (not once per frame).
+  _prepare(width, height) {
+    const key = `${this.imageUrl}|${width}x${height}`;
+    if (this._cacheKey === key) return;
 
-    const canvas = document.createElement('canvas');
+    const canvas = this._canvas || document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.clearRect(0, 0, width, height);
 
-    // 1. Calculate exact 'cover' bounding box to match app.js background scaling
+    // 'cover' fit to match the app's background scaling
     const natW = this.imageObj.naturalWidth || width;
     const natH = this.imageObj.naturalHeight || height;
     const scale = Math.max(width / natW, height / natH);
-    const fittedWidth = natW * scale;
-    const fittedHeight = natH * scale;
-    const imgLeft = (width - fittedWidth) / 2;
-    const imgTop = (height - fittedHeight) / 2;
+    const fw = natW * scale;
+    const fh = natH * scale;
+    ctx.drawImage(this.imageObj, (width - fw) / 2, (height - fh) / 2, fw, fh);
 
-    // 2. Draw image into its exact cover containment box for pixel sampling
-    ctx.drawImage(this.imageObj, imgLeft, imgTop, fittedWidth, fittedHeight);
     const imgData = ctx.getImageData(0, 0, width, height);
-    const pixels = imgData.data;
+    const px = imgData.data;
+    const n = width * height;
+    const lum = new Float32Array(n);
+    for (let i = 0, p = 0; i < n; i++, p += 4) {
+      lum[i] = (0.299 * px[p] + 0.587 * px[p + 1] + 0.114 * px[p + 2]) / 255;
+      px[p] = px[p + 1] = px[p + 2] = 0; // mask color is always black; only alpha varies
+    }
 
-    // 3. Calculate max distance from origin to the actual image cover corners
-    const maxDistToImage = Math.max(
-      Math.hypot(cx - imgLeft, cy - imgTop),
-      Math.hypot(cx - (imgLeft + fittedWidth), cy - imgTop),
-      Math.hypot(cx - imgLeft, cy - (imgTop + fittedHeight)),
-      Math.hypot(cx - (imgLeft + fittedWidth), cy - (imgTop + fittedHeight))
-    );
+    this._canvas = canvas;
+    this._ctx = ctx;
+    this._imgData = imgData;
+    this._lum = lum;
+    this._arrival = new Float32Array(n);
+    this._cacheKey = key;
+  },
 
-    let pixelIndex = 0;
+  render(progress, { cx, cy, width, height, direction = 'forward', feather = 60 }) {
+    width = Math.round(width);
+    height = Math.round(height);
+    const f = Math.max(1, feather);
+    const p = Math.min(1, Math.max(0, progress));
+
+    if (!this.imageObj || width <= 0 || height <= 0) {
+      // Fallback: soft edge travels from fully hidden to fully covered
+      const maxD = Math.max(
+        Math.hypot(cx, cy),
+        Math.hypot(width - cx, cy),
+        Math.hypot(cx, height - cy),
+        Math.hypot(width - cx, height - cy)
+      );
+      const r = p * (maxD + f);
+      return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${r - f}px, transparent ${r}px)` };
+    }
+
+    this._prepare(width, height);
+    const lum = this._lum;
+    const arrival = this._arrival;
+    const imgData = this._imgData;
+    const px = imgData.data;
+    const forward = direction === 'forward';
+
+    // Pass 1: when does the wave reach each pixel? Track the true min/max.
+    let minA = Infinity;
+    let maxA = -Infinity;
+    let i = 0;
     for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        // If outside the canvas viewport, keep fully transparent
-        if (x < 0 || x >= width || y < 0 || y >= height) {
-          pixels[pixelIndex + 3] = 0;
-          pixelIndex += 4;
-          continue;
-        }
-
-        const r = pixels[pixelIndex] / 255;
-        const g = pixels[pixelIndex + 1] / 255;
-        const b = pixels[pixelIndex + 2] / 255;
-        const L = 0.299 * r + 0.587 * g + 0.114 * b;
-
-        const d = Math.hypot(x - cx, y - cy);
-        
-        let alpha = 0;
-
-        if (direction === 'forward') {
-          // Expanding outward from center: zero dead time, bright points get head start
-          const arrivalRadius = Math.max(0, d - (L * feather));
-          const waveRadius = maxDistToImage * progress;
-          const distIntoWave = waveRadius - arrivalRadius;
-          if (distIntoWave > 0) {
-            alpha = Math.max(0, Math.min(1, distIntoWave / feather));
-          }
-        } else {
-          // Collapsing inward from outside edge: zero dead time, bright points get head start
-          const arrivalRadius = d + (L * feather);
-          const maxWaveRadius = maxDistToImage + feather;
-          const waveRadius = maxWaveRadius * (1 - progress);
-          const distBehindWave = arrivalRadius - waveRadius;
-          if (distBehindWave > 0) {
-            alpha = Math.max(0, Math.min(1, distBehindWave / feather));
-          }
-        }
-
-        const byteVal = Math.round(alpha * 255);
-        pixels[pixelIndex] = 0;
-        pixels[pixelIndex + 1] = 0;
-        pixels[pixelIndex + 2] = 0;
-        pixels[pixelIndex + 3] = byteVal;
-
-        pixelIndex += 4;
+      const dy = y - cy;
+      for (let x = 0; x < width; x++, i++) {
+        const d = Math.hypot(x - cx, dy);
+        // Bright pixels get a head start (forward) / are covered earlier (backward)
+        const a = forward ? Math.max(0, d - lum[i] * f) : d + lum[i] * f;
+        arrival[i] = a;
+        if (a < minA) minA = a;
+        if (a > maxA) maxA = a;
       }
     }
 
-    ctx.putImageData(imgData, 0, 0);
-    const dataUrl = canvas.toDataURL();
-    return { maskTwo: `url("${dataUrl}")` };
+    // The wave travels exactly the range that is needed:
+    //  - first pixel begins changing at progress 0+ (no dead time)
+    //  - last pixel is fully opaque at progress 1 (no pop)
+    const travel = (maxA - minA) + f;
+    const wave = forward ? minA + travel * p : maxA - travel * p;
+
+    // Pass 2: alpha from distance past the wave front
+    const n = width * height;
+    for (let k = 0, q = 3; k < n; k++, q += 4) {
+      const dist = forward ? wave - arrival[k] : arrival[k] - wave;
+      const alpha = dist <= 0 ? 0 : dist >= f ? 1 : dist / f;
+      px[q] = (alpha * 255 + 0.5) | 0;
+    }
+
+    this._ctx.putImageData(imgData, 0, 0);
+    return { maskTwo: `url("${this._canvas.toDataURL()}")` };
   }
 };
