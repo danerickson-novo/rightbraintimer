@@ -8,5 +8,10 @@
     "id": "map-travel",
     "name": "Map Travel",
     "file": "thumbnails/map-travel.jpg"
+  },
+  {
+    "id": "eggs-luma",
+    "name": "Eggs Luma",
+    "file": "thumbnails/eggs-luma.jpg"
   }
 ]

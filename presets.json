@@ -1,0 +1,17 @@
+[
+  {
+    "id": "eggs-luma",
+    "name": "Eggs Luma",
+    "imageOne": "Eggs1.jpeg",
+    "imageTwo": "Eggs2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 150,
+    "origin": {
+      "x": 0.5064102564102564,
+      "y": 0.4809027777777778
+    },
+    "thumbnail": "thumbnails/eggs-luma.jpg"
+  }
+]
