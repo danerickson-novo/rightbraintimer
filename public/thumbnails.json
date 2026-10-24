@@ -108,5 +108,10 @@
     "id": "chess-to-cheese",
     "name": "Chess to Cheese",
     "file": "thumbnails/chess-to-cheese.jpg"
+  },
+  {
+    "id": "parking",
+    "name": "Parking",
+    "file": "thumbnails/parking.jpg"
   }
 ]

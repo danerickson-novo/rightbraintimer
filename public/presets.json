@@ -400,5 +400,20 @@
       "y": 0.5
     },
     "thumbnail": "thumbnails/chess-to-cheese.jpg"
+  },
+  {
+    "id": "parking",
+    "name": "Parking",
+    "imageOne": "Parking1.jpeg",
+    "imageTwo": "Parking2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "inverse",
+    "feather": 70,
+    "origin": {
+      "x": 0.31971153846153844,
+      "y": 0.07986111111111112
+    },
+    "thumbnail": "thumbnails/parking.jpg"
   }
 ]
