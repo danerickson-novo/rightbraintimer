@@ -385,5 +385,20 @@
       "y": 0.3550013354700854
     },
     "thumbnail": "thumbnails/unmask-a-predator.jpg"
+  },
+  {
+    "id": "chess-to-cheese",
+    "name": "Chess to Cheese",
+    "imageOne": "ChessCheese1.jpg",
+    "imageTwo": "ChessCheese2.jpg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 20,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "thumbnail": "thumbnails/chess-to-cheese.jpg"
   }
 ]

@@ -103,5 +103,10 @@
     "id": "unmask-a-predator",
     "name": "Unmask a Predator",
     "file": "thumbnails/unmask-a-predator.jpg"
+  },
+  {
+    "id": "chess-to-cheese",
+    "name": "Chess to Cheese",
+    "file": "thumbnails/chess-to-cheese.jpg"
   }
 ]
