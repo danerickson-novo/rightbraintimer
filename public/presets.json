@@ -415,5 +415,20 @@
       "y": 0.07986111111111112
     },
     "thumbnail": "thumbnails/parking.jpg"
+  },
+  {
+    "id": "build-a-castle",
+    "name": "Build a Castle",
+    "imageOne": "Castle1.jpeg",
+    "imageTwo": "Castle2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.6666666666666666,
+      "y": 0.49265491452991456
+    },
+    "thumbnail": "thumbnails/build-a-castle.jpg"
   }
 ]
