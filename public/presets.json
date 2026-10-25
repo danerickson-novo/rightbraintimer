@@ -252,21 +252,6 @@
     "thumbnail": "thumbnails/christmas-decorations.jpg"
   },
   {
-    "id": "christmas-feast",
-    "name": "Christmas Feast",
-    "imageOne": "ChristmasFeast1.jpeg",
-    "imageTwo": "ChristmasFeast2.jpeg",
-    "duration": 1,
-    "wipeType": "luma-circle",
-    "direction": "forward",
-    "feather": 200,
-    "origin": {
-      "x": 0.500801282051282,
-      "y": 0.00470753205128196
-    },
-    "thumbnail": "thumbnails/christmas-feast.jpg"
-  },
-  {
     "id": "art-studio",
     "name": "Art Studio",
     "imageOne": "ArtStudio1.jpeg",
