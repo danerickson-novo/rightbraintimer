@@ -430,5 +430,20 @@
       "y": 0.49265491452991456
     },
     "thumbnail": "thumbnails/build-a-castle.jpg"
+  },
+  {
+    "id": "desert-to-dessert",
+    "name": "Desert to Dessert",
+    "imageOne": "DesertDessert2.jpeg",
+    "imageTwo": "DesertDessert1.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "thumbnail": "thumbnails/desert-to-dessert.jpg"
   }
 ]

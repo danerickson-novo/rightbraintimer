@@ -118,5 +118,10 @@
     "id": "build-a-castle",
     "name": "Build a Castle",
     "file": "thumbnails/build-a-castle.jpg"
+  },
+  {
+    "id": "desert-to-dessert",
+    "name": "Desert to Dessert",
+    "file": "thumbnails/desert-to-dessert.jpg"
   }
 ]
