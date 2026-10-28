@@ -13,5 +13,20 @@
       "y": 0.4809027777777778
     },
     "thumbnail": "thumbnails/eggs-luma.jpg"
+  },
+  {
+    "id": "luma-thumb-test",
+    "name": "Luma Thumb Test",
+    "imageOne": "GardenNouveau1.jpeg",
+    "imageTwo": "GardenNouveau2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "forward",
+    "feather": 100,
+    "origin": {
+      "x": 0.23557692307692307,
+      "y": 0.4720886752136752
+    },
+    "thumbnail": "thumbnails/luma-thumb-test.jpg"
   }
 ]
