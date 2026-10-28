@@ -430,5 +430,35 @@
       "y": 0.5
     },
     "thumbnail": "thumbnails/desert-to-dessert.jpg"
+  },
+  {
+    "id": "luma-circ-thumb-test",
+    "name": "luma Circ Thumb Test",
+    "imageOne": "BeachPasta1.jpeg",
+    "imageTwo": "BeachPasta2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "inverse",
+    "feather": 100,
+    "origin": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "thumbnail": "thumbnails/luma-circ-thumb-test.jpg"
+  },
+  {
+    "id": "wolf-luma-thumb-test",
+    "name": "Wolf Luma Thumb Test",
+    "imageOne": "WolfSheep1.jpg",
+    "imageTwo": "WolfSheep2.jpeg",
+    "duration": 1,
+    "wipeType": "luma-circle",
+    "direction": "forward",
+    "feather": 100,
+    "origin": {
+      "x": 0.7163461538461539,
+      "y": 0.286091079059829
+    },
+    "thumbnail": "thumbnails/wolf-luma-thumb-test.jpg"
   }
 ]

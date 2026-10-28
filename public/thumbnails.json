@@ -123,5 +123,15 @@
     "id": "desert-to-dessert",
     "name": "Desert to Dessert",
     "file": "thumbnails/desert-to-dessert.jpg"
+  },
+  {
+    "id": "luma-circ-thumb-test",
+    "name": "luma Circ Thumb Test",
+    "file": "thumbnails/luma-circ-thumb-test.jpg"
+  },
+  {
+    "id": "wolf-luma-thumb-test",
+    "name": "Wolf Luma Thumb Test",
+    "file": "thumbnails/wolf-luma-thumb-test.jpg"
   }
 ]
