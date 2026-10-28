@@ -1,0 +1,14 @@
+# Right Brain Timer Todo & Notes
+- [ ] Create Luma side wipe
+- [ ] Create Luma top wipe
+- [ ] Fix thumbnails for luma circular wipe (maybe use circular wipe for thumbnail if necessary)
+- [ ] Delete all presets and start over (to fix thumbnails and standardize naming and durations)
+- [ ] Add wipe descriptions and what they might be used for (and suggested lengths?)
+- [ ] Experiment with beginning and ending points (for image pairs that don't have clear endings/beginnings) Remember that these changes require additional parameters in presets.json
+- [ ] Create tags & tag lists for presets and images
+- [ ] Add edit and delete capability to admin.js and admin.html
+- [ ] item
+- [ ] item
+- [ ] item
+- [ ] item
+- [x] item

@@ -448,7 +448,8 @@ async function generateThumbnailAt50Percent() {
     const cx = w * origin.x;
     const cy = h * origin.y;
 
-    if (wipeType === 'circle') {
+    // Luma circle thumbnails reuse the simple circular wipe (close enough visually)
+    if (wipeType === 'circle' || wipeType === 'luma-circle') {
       const farthestCorner = Math.max(
         Math.hypot(cx, cy),
         Math.hypot(w - cx, cy),
