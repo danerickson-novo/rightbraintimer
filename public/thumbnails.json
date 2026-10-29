@@ -133,5 +133,15 @@
     "id": "wolf-luma-thumb-test",
     "name": "Wolf Luma Thumb Test",
     "file": "thumbnails/wolf-luma-thumb-test.jpg"
+  },
+  {
+    "id": "2-point-test-candles",
+    "name": "2 point test candles",
+    "file": "thumbnails/2-point-test-candles.jpg"
+  },
+  {
+    "id": "2-point-test-fire",
+    "name": "2 point test fire",
+    "file": "thumbnails/2-point-test-fire.jpg"
   }
 ]
