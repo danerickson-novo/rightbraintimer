@@ -3,6 +3,7 @@ export const lumaCircularWipe = {
   name: 'Luminance Circular',
   supportsOrigin: true,
   supportsFeather: true,
+  supportsFinish: true, // honors options.endRadius (wipe stops early)
   iconSvg: `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" /><path d="M12 8v8m-4-4h8" stroke="currentColor" stroke-width="1.5"/></svg>`,
 
   imageObj: null,
@@ -69,11 +70,13 @@ export const lumaCircularWipe = {
     this._cacheKey = key;
   },
 
-  render(progress, { cx, cy, width, height, direction = 'forward', feather = 60 }) {
+  render(progress, { cx, cy, width, height, direction = 'forward', feather = 60, endRadius = null }) {
     width = Math.round(width);
     height = Math.round(height);
     const f = Math.max(1, feather);
     const p = Math.min(1, Math.max(0, progress));
+    // endRadius (pixels) = where the soft edge stops. null/0 = wipe the whole image.
+    const hasEnd = Number.isFinite(endRadius) && endRadius > 0;
 
     if (!this.imageObj || width <= 0 || height <= 0) {
       // Fallback: soft edge travels from fully hidden to fully covered
@@ -83,7 +86,7 @@ export const lumaCircularWipe = {
         Math.hypot(cx, height - cy),
         Math.hypot(width - cx, height - cy)
       );
-      const r = p * (maxD + f);
+      const r = p * (hasEnd ? endRadius : maxD + f);
       return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${r - f}px, transparent ${r}px)` };
     }
 
@@ -112,9 +115,21 @@ export const lumaCircularWipe = {
 
     // The wave travels exactly the range that is needed:
     //  - first pixel begins changing at progress 0+ (no dead time)
-    //  - last pixel is fully opaque at progress 1 (no pop)
-    const travel = (maxA - minA) + f;
-    const wave = forward ? minA + travel * p : maxA - travel * p;
+    //  - last pixel is fully opaque at progress 1 (no pop), unless a finish
+    //    radius is set, in which case the wave stops there and the soft edge
+    //    ends at endRadius.
+    let waveStart;
+    let waveEnd;
+    if (forward) {
+      waveStart = minA;
+      waveEnd = hasEnd ? Math.min(endRadius, maxA + f) : maxA + f;
+      waveEnd = Math.max(waveEnd, minA + 1);
+    } else {
+      waveStart = maxA;
+      waveEnd = hasEnd ? Math.max(endRadius - f, minA - f) : minA - f;
+      waveEnd = Math.min(waveEnd, maxA - 1);
+    }
+    const wave = waveStart + (waveEnd - waveStart) * p;
 
     // Pass 2: alpha from distance past the wave front
     const n = width * height;

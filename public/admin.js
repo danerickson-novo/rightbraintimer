@@ -17,6 +17,17 @@ const previewBtn = document.querySelector('#previewBtn');
 const saveStatus = document.querySelector('#saveStatus');
 const thumbnailCard = document.querySelector('#thumbnailCard');
 const thumbnailCanvas = document.querySelector('#thumbnailCanvas');
+const finishRow = document.querySelector('#finishRow');
+const finishToggle = document.querySelector('#finishToggle');
+const finishHint = document.querySelector('#finishHint');
+
+// Dashed ring showing where the wipe will stop (lives inside the origin picker)
+const finishRing = document.createElement('span');
+finishRing.className = 'finish-ring';
+finishRing.setAttribute('aria-hidden', 'true');
+finishRing.hidden = true;
+originPicker.append(finishRing);
+originPicker.style.touchAction = 'none'; // let touch drags reach us instead of scrolling
 
 // Gallery Elements
 const galleryDialog = document.querySelector('#galleryDialog');
@@ -41,6 +52,16 @@ let maskFeather = 70;
 let origin = { x: 0.5, y: 0.5 };
 let sourceSize = null;
 let galleryFiles = null;
+
+// Finish point: the wipe stops when its soft edge reaches this distance from the origin.
+// Stored as a fraction of the image diagonal so it scales with the image like `origin` does.
+let finishEnabled = false;
+let finishRadius = 0.25;
+let awaitingFinish = false; // two-click mode: the next click sets the finish point
+let drag = null;
+const DRAG_THRESHOLD = 6; // px of movement before a press counts as a drag
+const MIN_FINISH = 0.01;
+const MAX_FINISH = 1;
 
 const slots = {
   one: {
@@ -134,6 +155,44 @@ function positionOriginMarker() {
   const point = canvasOrigin('contain');
   originMarker.style.left = `${point.x}px`;
   originMarker.style.top = `${point.y}px`;
+  positionFinishRing();
+}
+
+function finishAvailable() {
+  const transition = transitionsRegistry.get(wipeType);
+  return Boolean(transition && transition.supportsFinish);
+}
+
+function finishActive() {
+  return finishEnabled && finishAvailable();
+}
+
+// Pixel radius of the finish circle for a given image fit, or null when not in use.
+function finishRadiusPx(fit) {
+  if (!finishActive()) return null;
+  const bounds = imageBounds(fit);
+  return finishRadius * Math.hypot(bounds.width, bounds.height);
+}
+
+function positionFinishRing() {
+  const show = finishActive() && !originPicker.hidden;
+  finishRing.hidden = !show;
+  if (!show) return;
+  const point = canvasOrigin('contain');
+  const diameter = finishRadiusPx('contain') * 2;
+  finishRing.style.left = `${point.x}px`;
+  finishRing.style.top = `${point.y}px`;
+  finishRing.style.width = `${diameter}px`;
+  finishRing.style.height = `${diameter}px`;
+}
+
+function updateFinishHint() {
+  const available = finishAvailable();
+  finishRow.hidden = !available;
+  finishHint.hidden = !(available && finishEnabled);
+  finishHint.textContent = awaitingFinish
+    ? 'Now click the finish point (or drag from the origin to adjust).'
+    : 'Click the origin, then click the finish point — or drag from the origin to the finish. Shift+click moves the origin only.';
 }
 
 function updateOrigin(x, y) {
@@ -145,31 +204,84 @@ function updateOrigin(x, y) {
   generateThumbnailAt50Percent();
 }
 
-/**
- * Mouse click listener that maps click location directly to image boundaries
- */
-function chooseOrigin(event) {
-  if (event.detail === 0) {
-    updateOrigin(0.5, 0.5);
-    return;
-  }
+const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
+// Pointer position in the origin picker's own pixel space
+function pickerPoint(event) {
   const pickerBounds = originPicker.getBoundingClientRect();
-  const clickX = event.clientX - pickerBounds.left;
-  const clickY = event.clientY - pickerBounds.top;
+  return { x: event.clientX - pickerBounds.left, y: event.clientY - pickerBounds.top };
+}
 
+function setOriginFromPixels(px, py) {
   const bounds = imageBounds('contain');
   if (!bounds.width || !bounds.height) return;
+  origin = {
+    x: clamp01((px - bounds.left) / bounds.width),
+    y: clamp01((py - bounds.top) / bounds.height),
+  };
+}
 
-  // Calculate normalized coordinate relative strictly to the displayed image area
-  const normalizedX = (clickX - bounds.left) / bounds.width;
-  const normalizedY = (clickY - bounds.top) / bounds.height;
+function setFinishFromPixels(px, py) {
+  const bounds = imageBounds('contain');
+  const diagonal = Math.hypot(bounds.width, bounds.height);
+  if (!diagonal) return;
+  const start = canvasOrigin('contain');
+  const distance = Math.hypot(px - start.x, py - start.y);
+  finishRadius = Math.min(MAX_FINISH, Math.max(MIN_FINISH, distance / diagonal));
+}
 
-  // Clamp values within 0.0 to 1.0 range
-  updateOrigin(
-    Math.min(1, Math.max(0, normalizedX)),
-    Math.min(1, Math.max(0, normalizedY))
-  );
+function onPickerPointerDown(event) {
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  drag = { id: event.pointerId, start: pickerPoint(event), moved: false };
+  originPicker.setPointerCapture(event.pointerId);
+}
+
+function onPickerPointerMove(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  const point = pickerPoint(event);
+
+  if (!drag.moved) {
+    // Dragging only means something when a finish point is being set
+    if (!finishActive()) return;
+    if (Math.hypot(point.x - drag.start.x, point.y - drag.start.y) < DRAG_THRESHOLD) return;
+    drag.moved = true;
+    setOriginFromPixels(drag.start.x, drag.start.y); // press point is the origin
+  }
+
+  setFinishFromPixels(point.x, point.y);
+  positionOriginMarker(); // moves marker + ring; thumbnail waits until release
+}
+
+function onPickerPointerUp(event) {
+  if (!drag || event.pointerId !== drag.id) return;
+  const point = pickerPoint(event);
+  const wasDrag = drag.moved;
+  drag = null;
+
+  if (wasDrag) {
+    awaitingFinish = false;
+  } else if (finishActive()) {
+    if (event.shiftKey) {
+      setOriginFromPixels(point.x, point.y); // move the origin, keep the ring size
+      awaitingFinish = false;
+    } else if (awaitingFinish) {
+      setFinishFromPixels(point.x, point.y);
+      awaitingFinish = false;
+    } else {
+      setOriginFromPixels(point.x, point.y);
+      awaitingFinish = true;
+    }
+  } else {
+    setOriginFromPixels(point.x, point.y);
+  }
+
+  positionOriginMarker();
+  updateFinishHint();
+  generateThumbnailAt50Percent();
+}
+
+function onPickerPointerCancel() {
+  drag = null;
 }
 
 function moveOrigin(event) {
@@ -182,12 +294,23 @@ function moveOrigin(event) {
   const change = directions[event.key];
   if (!change) return;
   event.preventDefault();
+
+  if (event.shiftKey && finishActive()) {
+    const grow = event.key === 'ArrowRight' || event.key === 'ArrowUp';
+    finishRadius = Math.min(MAX_FINISH, Math.max(MIN_FINISH, finishRadius + (grow ? 0.02 : -0.02)));
+    positionOriginMarker();
+    generateThumbnailAt50Percent();
+    return;
+  }
+
   updateOrigin(origin.x + change[0], origin.y + change[1]);
 }
 
 function syncOriginPicker() {
   const transition = transitionsRegistry.get(wipeType);
   originPicker.hidden = !(transition && transition.supportsOrigin);
+  updateFinishHint();
+  positionFinishRing();
 }
 
 function renderProgress(progress) {
@@ -195,26 +318,30 @@ function renderProgress(progress) {
   imageOne.style.opacity = '1';
   imageTwo.style.zIndex = '2';
 
+  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
+  const endRadius = finishRadiusPx('cover');
+
   if (progress <= 0) {
     imageTwo.style.opacity = '0';
     imageTwo.style.maskImage = 'none';
     return;
   }
-  if (progress >= 1) {
+  // With a finish point the last frame is the partial wipe, not the full image
+  if (progress >= 1 && endRadius === null) {
     imageTwo.style.opacity = '1';
     imageTwo.style.maskImage = 'none';
     return;
   }
 
-  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
   const point = canvasOrigin('cover');
-  const result = transition.render(progress, {
+  const result = transition.render(Math.min(progress, 1), {
     width: timerCanvas.clientWidth,
     height: timerCanvas.clientHeight,
     direction,
     feather: maskFeather,
     cx: point.x,
     cy: point.y,
+    endRadius,
   });
 
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
@@ -407,6 +534,7 @@ function readFormValues() {
   maskFeather = Number(featherAmount.value);
   wipeType = form.elements.wipeType.value;
   direction = form.elements.direction.value;
+  finishEnabled = finishToggle.checked;
 }
 
 // --- 50% Progress Thumbnail Snapshot Generator ---
@@ -460,7 +588,15 @@ async function generateThumbnailAt50Percent() {
       const minRadius = -f / 2;
       const maxRadiusBuffered = maxDist + f / 2;
 
-      const currentRadius = minRadius + (maxRadiusBuffered - minRadius) * (direction === 'forward' ? progress : 1 - progress);
+      // Radius (centre of the soft edge) at the start and end of the wipe. With a finish
+      // point the soft edge ends at the finish radius, so its centre is half a feather inside.
+      const startRadius = direction === 'forward' ? minRadius : maxRadiusBuffered;
+      let endRadius = direction === 'forward' ? maxRadiusBuffered : minRadius;
+      if (finishActive()) {
+        const finishPx = finishRadius * Math.hypot(w, h);
+        endRadius = Math.min(maxRadiusBuffered, Math.max(minRadius, finishPx - f / 2));
+      }
+      const currentRadius = startRadius + (endRadius - startRadius) * progress;
       const innerRadius = Math.max(0, currentRadius - f / 2);
       const outerRadius = Math.max(0, currentRadius + f / 2);
 
@@ -606,6 +742,7 @@ async function savePreset(e) {
     direction,
     feather: maskFeather,
     origin,
+    ...(finishActive() ? { finishRadius: Number(finishRadius.toFixed(4)) } : {}),
     thumbnail: `thumbnails/${id}.jpg`,
   };
 
@@ -640,6 +777,7 @@ renderTransitionOptions();
 applyImage(slots.one, imageUrl('Default1.jpeg'), displayName('Default1.jpeg'), 'Default1.jpeg');
 applyImage(slots.two, imageUrl('Default2.jpeg'), displayName('Default2.jpeg'), 'Default2.jpeg');
 updateOrigin(0.5, 0.5);
+syncOriginPicker();
 
 Object.values(slots).forEach((slot) => {
   slot.button.addEventListener('click', () => openGallery(slot));
@@ -651,8 +789,22 @@ galleryDialog.addEventListener('click', (e) => {
 });
 galleryUpload.addEventListener('change', uploadImage);
 
-originPicker.addEventListener('click', chooseOrigin);
+// Pointer events handle clicks and drags; the click event is kept only for keyboard activation
+originPicker.addEventListener('pointerdown', onPickerPointerDown);
+originPicker.addEventListener('pointermove', onPickerPointerMove);
+originPicker.addEventListener('pointerup', onPickerPointerUp);
+originPicker.addEventListener('pointercancel', onPickerPointerCancel);
+originPicker.addEventListener('click', (event) => {
+  if (event.detail === 0) updateOrigin(0.5, 0.5);
+});
 originPicker.addEventListener('keydown', moveOrigin);
+
+finishToggle.addEventListener('change', () => {
+  finishEnabled = finishToggle.checked;
+  awaitingFinish = false;
+  updateFinishHint();
+  positionFinishRing();
+});
 
 previewBtn.addEventListener('click', startPreview);
 editButton.addEventListener('click', reviseSettings);

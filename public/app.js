@@ -37,6 +37,8 @@ let direction = 'forward';
 let isPaused = false;
 let maskFeather = 60;
 let origin = { x: 0.5, y: 0.5 };
+// Where the wipe stops, as a fraction of the image diagonal. null = replace the whole image.
+let finishRadius = null;
 let sourceSize;
 let loadedPresets = [];
 let activePresetId = null;
@@ -105,24 +107,35 @@ function applyMask(layer, gradient) {
   layer.style.webkitMaskImage = gradient;
 }
 
+// Pixel radius at which the wipe stops, or null when the wipe should cover everything.
+function activeFinishRadius(transition, fit) {
+  if (finishRadius === null || !transition || !transition.supportsFinish) return null;
+  const bounds = imageBounds(fit);
+  return finishRadius * Math.hypot(bounds.width, bounds.height);
+}
+
 function renderProgress(progress) {
   imageOne.style.zIndex = '1';
   imageOne.style.opacity = '1';
   clearMask(imageOne);
   imageTwo.style.zIndex = '2';
 
+  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
+  const endRadius = activeFinishRadius(transition, 'cover');
+
   if (progress <= 0) {
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
     return;
   }
-  if (progress >= 1) {
+  // With a finish point the final frame is the partial wipe, so only snap to the
+  // fully replaced image when there is no finish point.
+  if (progress >= 1 && endRadius === null) {
     imageTwo.style.opacity = '1';
     clearMask(imageTwo);
     return;
   }
 
-  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
   const point = canvasOrigin('cover');
   const width = timerCanvas.clientWidth;
   const height = timerCanvas.clientHeight;
@@ -134,9 +147,10 @@ function renderProgress(progress) {
     feather: maskFeather,
     cx: point.x,
     cy: point.y,
+    endRadius,
   };
 
-  const result = transition.render(progress, options);
+  const result = transition.render(Math.min(progress, 1), options);
 
   // Apply opacities
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
@@ -275,6 +289,7 @@ function syncOriginPicker() {
 }
 
 function chooseOrigin(event) {
+  finishRadius = null;
   if (event.detail === 0) {
     updateOrigin(0.5, 0.5);
     return;
@@ -298,6 +313,7 @@ function moveOrigin(event) {
   const change = directions[event.key];
   if (!change) return;
   event.preventDefault();
+  finishRadius = null;
   updateOrigin(origin.x + change[0], origin.y + change[1]);
 }
 
@@ -538,6 +554,8 @@ function applyPreset(preset) {
   if (preset.origin) {
     updateOrigin(preset.origin.x, preset.origin.y);
   }
+  finishRadius =
+    typeof preset.finishRadius === 'number' && preset.finishRadius > 0 ? preset.finishRadius : null;
 
   syncOriginPicker();
 }
