@@ -492,5 +492,21 @@
     },
     "finishRadius": 0.427,
     "thumbnail": "thumbnails/2-point-test-fire.jpg"
+  },
+  {
+    "id": "fireplace-2-point-test",
+    "name": "Fireplace 2 point test",
+    "imageOne": "Blaze1.jpeg",
+    "imageTwo": "Blaze2.jpeg",
+    "duration": 1,
+    "wipeType": "circle",
+    "direction": "forward",
+    "feather": 150,
+    "origin": {
+      "x": 0.5048076923076923,
+      "y": 0.8732638888888888
+    },
+    "finishRadius": 0.4399,
+    "thumbnail": "thumbnails/fireplace-2-point-test.jpg"
   }
 ]

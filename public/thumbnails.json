@@ -143,5 +143,10 @@
     "id": "2-point-test-fire",
     "name": "2 point test fire",
     "file": "thumbnails/2-point-test-fire.jpg"
+  },
+  {
+    "id": "fireplace-2-point-test",
+    "name": "Fireplace 2 point test",
+    "file": "thumbnails/fireplace-2-point-test.jpg"
   }
 ]

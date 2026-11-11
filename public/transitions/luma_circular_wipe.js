@@ -17,10 +17,19 @@ export const lumaCircularWipe = {
   _arrival: null,  // Float32Array scratch buffer
   _cacheKey: '',
 
+  // Firefox loads CSS url() mask images asynchronously. A brand-new data URL every frame
+  // is replaced before it ever finishes loading, so the mask never appears. In Firefox we
+  // therefore only hand the browser a URL that has already loaded.
+  _firefox: typeof document !== 'undefined' && 'MozAppearance' in document.documentElement.style,
+  _ready: null,    // last data URL confirmed loaded
+  _loading: false, // a mask image is currently loading
+  _lastP: 0,
+
   async init(imageTwoUrl) {
     if (this.imageUrl === imageTwoUrl && this.imageObj) return;
     this.imageUrl = imageTwoUrl;
     this._cacheKey = ''; // invalidate
+    this._ready = null;
 
     return new Promise((resolve) => {
       const img = new Image();
@@ -70,6 +79,18 @@ export const lumaCircularWipe = {
     this._cacheKey = key;
   },
 
+  _fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) {
+    // Soft edge travels from fully hidden to fully covered
+    const maxD = Math.max(
+      Math.hypot(cx, cy),
+      Math.hypot(width - cx, cy),
+      Math.hypot(cx, height - cy),
+      Math.hypot(width - cx, height - cy)
+    );
+    const r = p * (hasEnd ? endRadius : maxD + f);
+    return `radial-gradient(circle at ${cx}px ${cy}px, #000 ${r - f}px, transparent ${r}px)`;
+  },
+
   render(progress, { cx, cy, width, height, direction = 'forward', feather = 60, endRadius = null }) {
     width = Math.round(width);
     height = Math.round(height);
@@ -79,15 +100,7 @@ export const lumaCircularWipe = {
     const hasEnd = Number.isFinite(endRadius) && endRadius > 0;
 
     if (!this.imageObj || width <= 0 || height <= 0) {
-      // Fallback: soft edge travels from fully hidden to fully covered
-      const maxD = Math.max(
-        Math.hypot(cx, cy),
-        Math.hypot(width - cx, cy),
-        Math.hypot(cx, height - cy),
-        Math.hypot(width - cx, height - cy)
-      );
-      const r = p * (hasEnd ? endRadius : maxD + f);
-      return { maskTwo: `radial-gradient(circle at ${cx}px ${cy}px, #000 ${r - f}px, transparent ${r}px)` };
+      return { maskTwo: this._fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) };
     }
 
     this._prepare(width, height);
@@ -96,6 +109,21 @@ export const lumaCircularWipe = {
     const imgData = this._imgData;
     const px = imgData.data;
     const forward = direction === 'forward';
+
+    if (this._firefox) {
+      // A new transition started: drop the previous transition's last mask
+      if (p < this._lastP) this._ready = null;
+      this._lastP = p;
+      // Endpoints are exact and need no image
+      if (p <= 0) return { maskTwo: 'linear-gradient(transparent, transparent)' };
+      if (p >= 1 && !hasEnd) return { maskTwo: 'linear-gradient(#000, #000)' };
+      // Still waiting on the previous mask to load: keep showing the last loaded one
+      if (this._loading) {
+        return { maskTwo: this._ready
+          ? `url("${this._ready}")`
+          : this._fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) };
+      }
+    }
 
     // Pass 1: when does the wave reach each pixel? Track the true min/max.
     let minA = Infinity;
@@ -140,6 +168,20 @@ export const lumaCircularWipe = {
     }
 
     this._ctx.putImageData(imgData, 0, 0);
-    return { maskTwo: `url("${this._canvas.toDataURL()}")` };
+    const url = this._canvas.toDataURL();
+
+    if (this._firefox) {
+      // Load this frame's mask in the background; it is used from the next frame on
+      this._loading = true;
+      const img = new Image();
+      img.onload = () => { this._ready = url; this._loading = false; };
+      img.onerror = () => { this._loading = false; };
+      img.src = url;
+      return { maskTwo: this._ready
+        ? `url("${this._ready}")`
+        : this._fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) };
+    }
+
+    return { maskTwo: `url("${url}")` };
   }
 };
