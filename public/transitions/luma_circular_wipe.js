@@ -114,6 +114,11 @@ export const lumaCircularWipe = {
     // endRadius (pixels) = where the soft edge stops. null/0 = wipe the whole image.
     const hasEnd = Number.isFinite(endRadius) && endRadius > 0;
 
+    if (!this._dbgCalled) {
+      this._dbgCalled = true;
+      console.log('[luma-circle debug] render() is being called. imageObj loaded:', !!this.imageObj, 'unusable:', this._unusable);
+    }
+
     if (this._unusable || !this.imageObj || width <= 0 || height <= 0) {
       return { maskTwo: this._fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) };
     }
@@ -128,6 +133,7 @@ export const lumaCircularWipe = {
   },
 
   _renderLuma(p, cx, cy, width, height, direction, f, endRadius, hasEnd) {
+    this._dbgStart = performance.now();
     this._prepare(width, height);
     const lum = this._lum;
     const arrival = this._arrival;
@@ -178,6 +184,22 @@ export const lumaCircularWipe = {
     }
 
     this._ctx.putImageData(imgData, 0, 0);
-    return { maskTwo: `url("${this._canvas.toDataURL()}")` };
+    const url = this._canvas.toDataURL();
+
+    // TEMPORARY DEBUG: one line per second in the browser console
+    const now = performance.now();
+    if (!this._dbgT || now - this._dbgT > 1000) {
+      this._dbgT = now;
+      let aMin = 255, aMax = 0;
+      for (let k = 3; k < px.length; k += 4 * 997) { // sparse sample is plenty
+        if (px[k] < aMin) aMin = px[k];
+        if (px[k] > aMax) aMax = px[k];
+      }
+      console.log(`[luma-circle debug] p=${p.toFixed(3)} size=${width}x${height} ` +
+        `alpha(min..max)=${aMin}..${aMax} dir=${direction} feather=${f} endRadius=${endRadius} ` +
+        `dataUrlKB=${(url.length / 1024) | 0} renderMs=${(now - this._dbgStart).toFixed(0)}`);
+    }
+
+    return { maskTwo: `url("${url}")` };
   }
 };
