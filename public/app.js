@@ -97,6 +97,25 @@ function canvasOrigin(fit) {
   };
 }
 
+// Some wipes (the luma wipe in Firefox) return a ready-made canvas instead of a CSS mask.
+// It is stacked directly above #imageTwo and #imageTwo itself is hidden meanwhile.
+let overlayCanvas = null;
+
+function showCanvasTwo(canvas) {
+  if (overlayCanvas !== canvas) {
+    hideCanvasTwo();
+    overlayCanvas = canvas;
+    canvas.style.cssText =
+      'position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;';
+    imageTwo.after(canvas);
+  }
+  canvas.style.display = '';
+}
+
+function hideCanvasTwo() {
+  if (overlayCanvas) overlayCanvas.style.display = 'none';
+}
+
 function clearMask(layer) {
   layer.style.maskImage = 'none';
   layer.style.webkitMaskImage = 'none';
@@ -124,6 +143,7 @@ function renderProgress(progress) {
   const endRadius = activeFinishRadius(transition, 'cover');
 
   if (progress <= 0) {
+    hideCanvasTwo();
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
     return;
@@ -131,6 +151,7 @@ function renderProgress(progress) {
   // With a finish point the final frame is the partial wipe, so only snap to the
   // fully replaced image when there is no finish point.
   if (progress >= 1 && endRadius === null) {
+    hideCanvasTwo();
     imageTwo.style.opacity = '1';
     clearMask(imageTwo);
     return;
@@ -151,6 +172,14 @@ function renderProgress(progress) {
   };
 
   const result = transition.render(Math.min(progress, 1), options);
+
+  if (result.canvasTwo) {
+    showCanvasTwo(result.canvasTwo);
+    imageTwo.style.opacity = '0';
+    clearMask(imageTwo);
+    return;
+  }
+  hideCanvasTwo();
 
   // Apply opacities
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
@@ -253,6 +282,7 @@ function resetTimer() {
   imageTwo.style.zIndex = '2';
   imageTwo.style.opacity = '0';
   clearMask(imageTwo);
+  hideCanvasTwo();
   if (document.fullscreenElement === timerCard) document.exitFullscreen();
   timerCanvas.setAttribute('aria-label', 'Timer preview, showing the starting image');
   requestAnimationFrame(positionOriginMarker);

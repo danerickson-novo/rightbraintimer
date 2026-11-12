@@ -18,6 +18,15 @@ export const lumaCircularWipe = {
   _cacheKey: '',
   _unusable: false, // true when this browser won't give us real pixel data
 
+  // Firefox decodes CSS mask-image images lazily, at paint time. This wipe changes the mask
+  // image every frame, and on some Firefox setups (notably high-DPI) the new image is swapped
+  // out before it is ever drawn, so the mask never shows. In Firefox we therefore also hand
+  // the app a ready-made canvas (the second image already multiplied by the mask), which has
+  // no loading or decoding step. Apps that don't know about `canvasTwo` still get `maskTwo`.
+  useCanvasInFirefox: true,
+  _firefox: typeof document !== 'undefined' && 'MozAppearance' in document.documentElement.style,
+  _display: null,
+
   async init(imageTwoUrl) {
     if (this.imageUrl === imageTwoUrl && this.imageObj) return;
     this.imageUrl = imageTwoUrl;
@@ -40,8 +49,8 @@ export const lumaCircularWipe = {
     });
   },
 
-  // Some browsers (Firefox with resistFingerprinting, LibreWolf, etc.) blank or randomize
-  // canvas pixel reads. Detect that with a pixel of known colour.
+  // Some browsers (e.g. Firefox with resistFingerprinting) blank or randomize canvas pixel
+  // reads. Detect that with a pixel of known colour.
   _canReadPixels() {
     try {
       const c = document.createElement('canvas');
@@ -68,6 +77,32 @@ export const lumaCircularWipe = {
     );
     const r = p * (hasEnd ? endRadius : maxD + f);
     return `radial-gradient(circle at ${cx}px ${cy}px, #000 ${r - f}px, transparent ${r}px)`;
+  },
+
+  // Second image, 'cover'-fitted and masked, drawn at the screen's real pixel density.
+  _composite(width, height) {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const w = Math.round(width * dpr);
+    const h = Math.round(height * dpr);
+    const canvas = this._display || (this._display = document.createElement('canvas'));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    const ctx = canvas.getContext('2d');
+    const natW = this.imageObj.naturalWidth || w;
+    const natH = this.imageObj.naturalHeight || h;
+    const scale = Math.max(w / natW, h / natH);
+    const fw = natW * scale;
+    const fh = natH * scale;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(this.imageObj, (w - fw) / 2, (h - fh) / 2, fw, fh);
+    ctx.globalCompositeOperation = 'destination-in'; // keep the image only where the mask is opaque
+    ctx.drawImage(this._canvas, 0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-over';
+    return canvas;
   },
 
   // Sample the image once per size (not once per frame).
@@ -114,17 +149,21 @@ export const lumaCircularWipe = {
     // endRadius (pixels) = where the soft edge stops. null/0 = wipe the whole image.
     const hasEnd = Number.isFinite(endRadius) && endRadius > 0;
 
-    if (!this._dbgCalled) {
-      this._dbgCalled = true;
-      console.log('[luma-circle debug] render() is being called. imageObj loaded:', !!this.imageObj, 'unusable:', this._unusable);
-    }
-
     if (this._unusable || !this.imageObj || width <= 0 || height <= 0) {
       return { maskTwo: this._fallbackMask(p, cx, cy, width, height, f, endRadius, hasEnd) };
     }
 
     try {
-      return this._renderLuma(p, cx, cy, width, height, direction, f, endRadius, hasEnd);
+      this._paintMask(p, cx, cy, width, height, direction, f, endRadius, hasEnd);
+      if (this._firefox && this.useCanvasInFirefox) {
+        const self = this;
+        return {
+          canvasTwo: this._composite(width, height),
+          // Only built if the app ignores canvasTwo and asks for it
+          get maskTwo() { return `url("${self._canvas.toDataURL()}")`; }
+        };
+      }
+      return { maskTwo: `url("${this._canvas.toDataURL()}")` };
     } catch (err) {
       console.warn('[luma-circle] render failed, using plain circular wipe:', err);
       this._unusable = true;
@@ -132,8 +171,8 @@ export const lumaCircularWipe = {
     }
   },
 
-  _renderLuma(p, cx, cy, width, height, direction, f, endRadius, hasEnd) {
-    this._dbgStart = performance.now();
+  // Paints this frame's alpha mask into this._canvas
+  _paintMask(p, cx, cy, width, height, direction, f, endRadius, hasEnd) {
     this._prepare(width, height);
     const lum = this._lum;
     const arrival = this._arrival;
@@ -184,22 +223,5 @@ export const lumaCircularWipe = {
     }
 
     this._ctx.putImageData(imgData, 0, 0);
-    const url = this._canvas.toDataURL();
-
-    // TEMPORARY DEBUG: one line per second in the browser console
-    const now = performance.now();
-    if (!this._dbgT || now - this._dbgT > 1000) {
-      this._dbgT = now;
-      let aMin = 255, aMax = 0;
-      for (let k = 3; k < px.length; k += 4 * 997) { // sparse sample is plenty
-        if (px[k] < aMin) aMin = px[k];
-        if (px[k] > aMax) aMax = px[k];
-      }
-      console.log(`[luma-circle debug] p=${p.toFixed(3)} size=${width}x${height} ` +
-        `alpha(min..max)=${aMin}..${aMax} dir=${direction} feather=${f} endRadius=${endRadius} ` +
-        `dataUrlKB=${(url.length / 1024) | 0} renderMs=${(now - this._dbgStart).toFixed(0)}`);
-    }
-
-    return { maskTwo: `url("${url}")` };
   }
 };
