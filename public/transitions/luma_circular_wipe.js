@@ -156,6 +156,10 @@ export const lumaCircularWipe = {
     try {
       this._paintMask(p, cx, cy, width, height, direction, f, endRadius, hasEnd);
       if (this._firefox && this.useCanvasInFirefox) {
+        if (!this._loggedCanvas) {
+          this._loggedCanvas = true;
+          console.info('[luma-circle] Firefox detected: using canvas output');
+        }
         const self = this;
         return {
           canvasTwo: this._composite(width, height),

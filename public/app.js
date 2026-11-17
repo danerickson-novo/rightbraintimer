@@ -103,6 +103,7 @@ let overlayCanvas = null;
 
 function showCanvasTwo(canvas) {
   if (overlayCanvas !== canvas) {
+    console.info('[app] showing canvas overlay for #imageTwo');
     hideCanvasTwo();
     overlayCanvas = canvas;
     canvas.style.cssText =
