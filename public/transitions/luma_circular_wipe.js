@@ -24,7 +24,9 @@ export const lumaCircularWipe = {
   // the app a ready-made canvas (the second image already multiplied by the mask), which has
   // no loading or decoding step. Apps that don't know about `canvasTwo` still get `maskTwo`.
   useCanvasInFirefox: true,
-  _firefox: typeof document !== 'undefined' && 'MozAppearance' in document.documentElement.style,
+  // Gecko-only property (also true for Firefox forks such as Zen), with a user-agent backup
+  _firefox: typeof window !== 'undefined' &&
+    ('mozInnerScreenX' in window || /\bFirefox\//.test(navigator.userAgent)),
   _display: null,
 
   async init(imageTwoUrl) {
