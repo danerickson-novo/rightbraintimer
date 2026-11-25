@@ -1,4 +1,5 @@
 import { transitionsRegistry } from './transitions/index.js';
+import { getTargetFps } from './transitions/luma_circular_wipe.js';
 
 const form = document.querySelector('#timerForm');
 const timerCard = document.querySelector('.timer-card');
@@ -43,6 +44,31 @@ let sourceSize;
 let loadedPresets = [];
 let activePresetId = null;
 
+// Frame-pacing state to avoid duplicate frames and match duration to smooth FPS
+let lastRenderedAt = -Infinity;
+let lastRenderedProgress = null;
+
+function getActiveTransition() {
+  return transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
+}
+
+function getCurrentTargetFps() {
+  const transition = getActiveTransition();
+  if (transition && typeof transition.getTargetFps === 'function') {
+    return transition.getTargetFps(durationMs);
+  }
+  return getTargetFps(durationMs);
+}
+
+function invalidateTransitionCaches() {
+  lastRenderedProgress = null;
+  transitionsRegistry.forEach((transition) => {
+    if (typeof transition.resetFrameCache === 'function') {
+      transition.resetFrameCache();
+    }
+  });
+}
+
 // --- Dynamic Transition UI Setup ---
 function renderTransitionOptions() {
   wipeOptionsContainer.replaceChildren();
@@ -57,6 +83,7 @@ function renderTransitionOptions() {
 
     input.addEventListener('change', () => {
       wipeType = id;
+      invalidateTransitionCaches();
       syncOriginPicker();
     });
 
@@ -97,13 +124,11 @@ function canvasOrigin(fit) {
   };
 }
 
-// Some wipes (the luma wipe in Firefox) return a ready-made canvas instead of a CSS mask.
-// It is stacked directly above #imageTwo and #imageTwo itself is hidden meanwhile.
+// Ready-made canvas stacked above #imageTwo when a transition returns `canvasTwo`.
 let overlayCanvas = null;
 
 function showCanvasTwo(canvas) {
   if (overlayCanvas !== canvas) {
-    console.info('[app] showing canvas overlay for #imageTwo');
     hideCanvasTwo();
     overlayCanvas = canvas;
     canvas.style.cssText =
@@ -134,28 +159,35 @@ function activeFinishRadius(transition, fit) {
   return finishRadius * Math.hypot(bounds.width, bounds.height);
 }
 
-function renderProgress(progress) {
+function renderProgress(progress, { force = false } = {}) {
+  const clampedProgress = Math.min(1, Math.max(0, progress));
+  if (!force && clampedProgress === lastRenderedProgress) {
+    return false;
+  }
+  lastRenderedProgress = clampedProgress;
+
   imageOne.style.zIndex = '1';
   imageOne.style.opacity = '1';
   clearMask(imageOne);
   imageTwo.style.zIndex = '2';
 
-  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
+  const transition = getActiveTransition();
   const endRadius = activeFinishRadius(transition, 'cover');
 
-  if (progress <= 0) {
+  if (clampedProgress <= 0) {
     hideCanvasTwo();
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
-    return;
+    return true;
   }
+
   // With a finish point the final frame is the partial wipe, so only snap to the
   // fully replaced image when there is no finish point.
-  if (progress >= 1 && endRadius === null) {
+  if (clampedProgress >= 1 && endRadius === null) {
     hideCanvasTwo();
     imageTwo.style.opacity = '1';
     clearMask(imageTwo);
-    return;
+    return true;
   }
 
   const point = canvasOrigin('cover');
@@ -172,21 +204,19 @@ function renderProgress(progress) {
     endRadius,
   };
 
-  const result = transition.render(Math.min(progress, 1), options);
+  const result = transition.render(clampedProgress, options);
 
   if (result.canvasTwo) {
     showCanvasTwo(result.canvasTwo);
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
-    return;
+    return true;
   }
   hideCanvasTwo();
 
-  // Apply opacities
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
   if (result.opacityOne !== undefined) imageOne.style.opacity = result.opacityOne;
 
-  // Apply or clear masks
   if (result.maskTwo) {
     applyMask(imageTwo, result.maskTwo);
   } else {
@@ -198,10 +228,13 @@ function renderProgress(progress) {
   } else {
     clearMask(imageOne);
   }
+
+  return true;
 }
 
-function completeTimer() {
-  renderProgress(1);
+function completeTimer(now = performance.now()) {
+  renderProgress(1, { force: true });
+  lastRenderedAt = now;
   timerCanvas.classList.remove('finish-bump');
   void timerCanvas.offsetWidth;
   timerCanvas.classList.add('finish-bump');
@@ -215,18 +248,30 @@ function tick(now) {
   if (isPaused) return;
 
   const elapsed = now - startedAt - pausedDuration;
-  const progress = Math.min(elapsed / durationMs, 1);
-  renderProgress(progress);
+  const progress = durationMs > 0 ? Math.min(elapsed / durationMs, 1) : 1;
 
-  if (progress < 1) {
-    animationFrame = requestAnimationFrame(tick);
-  } else {
-    completeTimer();
+  if (progress >= 1) {
+    completeTimer(now);
+    return;
   }
+
+  const targetFps = getCurrentTargetFps();
+  const minFrameIntervalMs = 1000 / targetFps;
+
+  if (now - lastRenderedAt >= minFrameIntervalMs) {
+    const didDraw = renderProgress(progress);
+    if (didDraw) {
+      lastRenderedAt = now;
+    }
+  }
+
+  animationFrame = requestAnimationFrame(tick);
 }
 
 function startTimer(event) {
   event.preventDefault();
+  cancelAnimationFrame(animationFrame);
+
   const duration = Number(document.querySelector('#duration').value);
   const feather = Number(featherAmount.value);
   if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(feather) || feather < 0) {
@@ -237,9 +282,11 @@ function startTimer(event) {
   maskFeather = feather;
   wipeType = form.elements.wipeType.value;
   direction = form.elements.direction.value;
-  startedAt = performance.now();
+  const now = performance.now();
+  startedAt = now;
   pausedDuration = 0;
   isPaused = false;
+  invalidateTransitionCaches();
 
   timerCard.classList.add('is-running');
   timerCard.classList.remove('is-paused');
@@ -250,7 +297,9 @@ function startTimer(event) {
   resetButton.textContent = 'End timer';
   timerState.textContent = 'In progress';
   timerCanvas.setAttribute('aria-label', 'Visual timer in progress');
-  renderProgress(0);
+
+  renderProgress(0, { force: true });
+  lastRenderedAt = now;
   animationFrame = requestAnimationFrame(tick);
 }
 
@@ -274,6 +323,7 @@ function togglePause() {
 
 function resetTimer() {
   cancelAnimationFrame(animationFrame);
+  invalidateTransitionCaches();
   timerCard.classList.remove('is-running', 'is-paused');
   timerCanvas.classList.remove('finish-bump');
   timerOverlay.hidden = true;
@@ -300,6 +350,7 @@ function updateOrigin(x, y) {
     x: Math.min(1, Math.max(0, x)),
     y: Math.min(1, Math.max(0, y)),
   };
+  invalidateTransitionCaches();
   positionOriginMarker();
   originPicker.setAttribute(
     'aria-label',
@@ -499,13 +550,14 @@ async function applyImage(slot, url, label, file = null) {
     loadedImage.src = url;
   }
 
-  // If this is the finishing image (slot two), pre-analyze luminance for luma-circle
   if (slot === slots.two) {
     const lumaTransition = transitionsRegistry.get('luma-circle');
     if (lumaTransition && typeof lumaTransition.init === 'function') {
       await lumaTransition.init(url);
     }
   }
+
+  invalidateTransitionCaches();
 
   if (typeof generateThumbnailAt50Percent === 'function') {
     generateThumbnailAt50Percent();
@@ -588,6 +640,7 @@ function applyPreset(preset) {
   finishRadius =
     typeof preset.finishRadius === 'number' && preset.finishRadius > 0 ? preset.finishRadius : null;
 
+  invalidateTransitionCaches();
   syncOriginPicker();
 }
 
@@ -674,7 +727,8 @@ window.addEventListener('resize', () => {
     const elapsed = isPaused
       ? pausedAt - startedAt - pausedDuration
       : performance.now() - startedAt - pausedDuration;
-    renderProgress(Math.min(elapsed / durationMs, 1));
+    invalidateTransitionCaches();
+    renderProgress(Math.min(elapsed / durationMs, 1), { force: true });
   } else {
     positionOriginMarker();
   }
