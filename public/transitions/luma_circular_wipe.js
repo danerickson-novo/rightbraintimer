@@ -1,7 +1,7 @@
 const DEFAULT_FPS_CONFIG = {
   minFps: 2,
   maxFps: 30,
-  steps: 240,
+  steps: 480,
 };
 
 /**
