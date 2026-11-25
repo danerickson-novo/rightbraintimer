@@ -1,5 +1,4 @@
 import { transitionsRegistry } from './transitions/index.js';
-import { getTargetFps } from './transitions/luma_circular_wipe.js';
 
 const form = document.querySelector('#timerForm');
 const timerCard = document.querySelector('.timer-card');
@@ -28,7 +27,17 @@ const presetStatus = document.querySelector('#presetStatus');
 
 const DEFAULT_THUMB = 'thumbnails/defthumb.jpeg';
 
+// The wipe edge moves slowly (a 1-minute timer on a 1080p screen: about 37 px/s), so redrawing
+// at the display's 60 fps is wasted work. The picture is redrawn only when the edge has moved
+// about PX_PER_UPDATE pixels, kept between MIN_FRAME_MS and MAX_FRAME_MS. Timing itself stays
+// clock-based, so skipping frames never changes when the timer finishes.
+const PX_PER_UPDATE = 2;
+const MIN_FRAME_MS = 50;    // never faster than 20 redraws per second
+const MAX_FRAME_MS = 1000;  // never slower than 1 redraw per second
+
 let animationFrame;
+let frameInterval = MIN_FRAME_MS;
+let lastRenderAt = -Infinity;
 let startedAt = 0;
 let pausedAt = 0;
 let pausedDuration = 0;
@@ -44,31 +53,6 @@ let sourceSize;
 let loadedPresets = [];
 let activePresetId = null;
 
-// Frame-pacing state to avoid duplicate frames and match duration to smooth FPS
-let lastRenderedAt = -Infinity;
-let lastRenderedProgress = null;
-
-function getActiveTransition() {
-  return transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
-}
-
-function getCurrentTargetFps() {
-  const transition = getActiveTransition();
-  if (transition && typeof transition.getTargetFps === 'function') {
-    return transition.getTargetFps(durationMs);
-  }
-  return getTargetFps(durationMs);
-}
-
-function invalidateTransitionCaches() {
-  lastRenderedProgress = null;
-  transitionsRegistry.forEach((transition) => {
-    if (typeof transition.resetFrameCache === 'function') {
-      transition.resetFrameCache();
-    }
-  });
-}
-
 // --- Dynamic Transition UI Setup ---
 function renderTransitionOptions() {
   wipeOptionsContainer.replaceChildren();
@@ -83,7 +67,6 @@ function renderTransitionOptions() {
 
     input.addEventListener('change', () => {
       wipeType = id;
-      invalidateTransitionCaches();
       syncOriginPicker();
     });
 
@@ -124,11 +107,13 @@ function canvasOrigin(fit) {
   };
 }
 
-// Ready-made canvas stacked above #imageTwo when a transition returns `canvasTwo`.
+// Some wipes (the luma wipe in Firefox) return a ready-made canvas instead of a CSS mask.
+// It is stacked directly above #imageTwo and #imageTwo itself is hidden meanwhile.
 let overlayCanvas = null;
 
 function showCanvasTwo(canvas) {
   if (overlayCanvas !== canvas) {
+    console.info('[app] showing canvas overlay for #imageTwo');
     hideCanvasTwo();
     overlayCanvas = canvas;
     canvas.style.cssText =
@@ -159,35 +144,28 @@ function activeFinishRadius(transition, fit) {
   return finishRadius * Math.hypot(bounds.width, bounds.height);
 }
 
-function renderProgress(progress, { force = false } = {}) {
-  const clampedProgress = Math.min(1, Math.max(0, progress));
-  if (!force && clampedProgress === lastRenderedProgress) {
-    return false;
-  }
-  lastRenderedProgress = clampedProgress;
-
+function renderProgress(progress) {
   imageOne.style.zIndex = '1';
   imageOne.style.opacity = '1';
   clearMask(imageOne);
   imageTwo.style.zIndex = '2';
 
-  const transition = getActiveTransition();
+  const transition = transitionsRegistry.get(wipeType) || transitionsRegistry.get('circle');
   const endRadius = activeFinishRadius(transition, 'cover');
 
-  if (clampedProgress <= 0) {
+  if (progress <= 0) {
     hideCanvasTwo();
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
-    return true;
+    return;
   }
-
   // With a finish point the final frame is the partial wipe, so only snap to the
   // fully replaced image when there is no finish point.
-  if (clampedProgress >= 1 && endRadius === null) {
+  if (progress >= 1 && endRadius === null) {
     hideCanvasTwo();
     imageTwo.style.opacity = '1';
     clearMask(imageTwo);
-    return true;
+    return;
   }
 
   const point = canvasOrigin('cover');
@@ -204,19 +182,21 @@ function renderProgress(progress, { force = false } = {}) {
     endRadius,
   };
 
-  const result = transition.render(clampedProgress, options);
+  const result = transition.render(Math.min(progress, 1), options);
 
   if (result.canvasTwo) {
     showCanvasTwo(result.canvasTwo);
     imageTwo.style.opacity = '0';
     clearMask(imageTwo);
-    return true;
+    return;
   }
   hideCanvasTwo();
 
+  // Apply opacities
   imageTwo.style.opacity = result.opacityTwo !== undefined ? result.opacityTwo : '1';
   if (result.opacityOne !== undefined) imageOne.style.opacity = result.opacityOne;
 
+  // Apply or clear masks
   if (result.maskTwo) {
     applyMask(imageTwo, result.maskTwo);
   } else {
@@ -228,13 +208,10 @@ function renderProgress(progress, { force = false } = {}) {
   } else {
     clearMask(imageOne);
   }
-
-  return true;
 }
 
-function completeTimer(now = performance.now()) {
-  renderProgress(1, { force: true });
-  lastRenderedAt = now;
+function completeTimer() {
+  renderProgress(1);
   timerCanvas.classList.remove('finish-bump');
   void timerCanvas.offsetWidth;
   timerCanvas.classList.add('finish-bump');
@@ -244,34 +221,33 @@ function completeTimer(now = performance.now()) {
   timerCanvas.setAttribute('aria-label', 'Timer complete, showing the finishing image');
 }
 
+// How long to wait between redraws: the time the wipe edge needs to travel PX_PER_UPDATE pixels.
+function updateFrameInterval() {
+  const diagonal = Math.hypot(timerCanvas.clientWidth, timerCanvas.clientHeight) || 1;
+  const ms = (durationMs / diagonal) * PX_PER_UPDATE;
+  frameInterval = Math.min(MAX_FRAME_MS, Math.max(MIN_FRAME_MS, ms));
+}
+
 function tick(now) {
   if (isPaused) return;
 
   const elapsed = now - startedAt - pausedDuration;
-  const progress = durationMs > 0 ? Math.min(elapsed / durationMs, 1) : 1;
+  const progress = Math.min(elapsed / durationMs, 1);
 
   if (progress >= 1) {
-    completeTimer(now);
+    completeTimer(); // always drawn right on time, whatever the redraw interval is
     return;
   }
 
-  const targetFps = getCurrentTargetFps();
-  const minFrameIntervalMs = 1000 / targetFps;
-
-  if (now - lastRenderedAt >= minFrameIntervalMs) {
-    const didDraw = renderProgress(progress);
-    if (didDraw) {
-      lastRenderedAt = now;
-    }
+  if (now - lastRenderAt >= frameInterval) {
+    renderProgress(progress);
+    lastRenderAt = now;
   }
-
   animationFrame = requestAnimationFrame(tick);
 }
 
 function startTimer(event) {
   event.preventDefault();
-  cancelAnimationFrame(animationFrame);
-
   const duration = Number(document.querySelector('#duration').value);
   const feather = Number(featherAmount.value);
   if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(feather) || feather < 0) {
@@ -282,11 +258,9 @@ function startTimer(event) {
   maskFeather = feather;
   wipeType = form.elements.wipeType.value;
   direction = form.elements.direction.value;
-  const now = performance.now();
-  startedAt = now;
+  startedAt = performance.now();
   pausedDuration = 0;
   isPaused = false;
-  invalidateTransitionCaches();
 
   timerCard.classList.add('is-running');
   timerCard.classList.remove('is-paused');
@@ -297,9 +271,9 @@ function startTimer(event) {
   resetButton.textContent = 'End timer';
   timerState.textContent = 'In progress';
   timerCanvas.setAttribute('aria-label', 'Visual timer in progress');
-
-  renderProgress(0, { force: true });
-  lastRenderedAt = now;
+  updateFrameInterval(); // measured after the layout has switched to its running state
+  lastRenderAt = -Infinity; // draw on the very first frame
+  renderProgress(0);
   animationFrame = requestAnimationFrame(tick);
 }
 
@@ -310,6 +284,7 @@ function togglePause() {
     timerCard.classList.remove('is-paused');
     timerState.textContent = 'In progress';
     pauseButton.querySelector('.sr-only').textContent = 'Pause timer';
+    lastRenderAt = -Infinity; // draw on the first frame after resuming
     animationFrame = requestAnimationFrame(tick);
   } else {
     cancelAnimationFrame(animationFrame);
@@ -323,7 +298,6 @@ function togglePause() {
 
 function resetTimer() {
   cancelAnimationFrame(animationFrame);
-  invalidateTransitionCaches();
   timerCard.classList.remove('is-running', 'is-paused');
   timerCanvas.classList.remove('finish-bump');
   timerOverlay.hidden = true;
@@ -350,7 +324,6 @@ function updateOrigin(x, y) {
     x: Math.min(1, Math.max(0, x)),
     y: Math.min(1, Math.max(0, y)),
   };
-  invalidateTransitionCaches();
   positionOriginMarker();
   originPicker.setAttribute(
     'aria-label',
@@ -550,14 +523,13 @@ async function applyImage(slot, url, label, file = null) {
     loadedImage.src = url;
   }
 
+  // If this is the finishing image (slot two), pre-analyze luminance for luma-circle
   if (slot === slots.two) {
     const lumaTransition = transitionsRegistry.get('luma-circle');
     if (lumaTransition && typeof lumaTransition.init === 'function') {
       await lumaTransition.init(url);
     }
   }
-
-  invalidateTransitionCaches();
 
   if (typeof generateThumbnailAt50Percent === 'function') {
     generateThumbnailAt50Percent();
@@ -640,7 +612,6 @@ function applyPreset(preset) {
   finishRadius =
     typeof preset.finishRadius === 'number' && preset.finishRadius > 0 ? preset.finishRadius : null;
 
-  invalidateTransitionCaches();
   syncOriginPicker();
 }
 
@@ -727,8 +698,9 @@ window.addEventListener('resize', () => {
     const elapsed = isPaused
       ? pausedAt - startedAt - pausedDuration
       : performance.now() - startedAt - pausedDuration;
-    invalidateTransitionCaches();
-    renderProgress(Math.min(elapsed / durationMs, 1), { force: true });
+    updateFrameInterval();
+    renderProgress(Math.min(elapsed / durationMs, 1));
+    lastRenderAt = performance.now();
   } else {
     positionOriginMarker();
   }
